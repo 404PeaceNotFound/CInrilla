@@ -1,13 +1,14 @@
-#include "game_logic.h"
+#include "scenes/scene_manager.h"
 
 int main(void) {
-    InitGame();
+    // Inicializa Janela, Audio e o Gerenciador de Cenas
+    InicializarGerenciadorCenas();
     
-    while (!ShouldCloseGame()) {
-        UpdateGame();
-        DrawGame();
+    while (!DeveFecharJogo()) {
+        AtualizarGerenciadorCenas();
+        DesenharGerenciadorCenas();
     }
     
-    CloseGame();
+    EncerrarGerenciadorCenas();
     return 0;
 }

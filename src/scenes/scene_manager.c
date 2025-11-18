@@ -1,62 +1,69 @@
 #include "scene_manager.h"
-#include "menu.h"  // Agora inclui menu.h para a definição completa de Button
-#include <stdio.h> 
+#include "../core/window.h"      // Vamos criar esse wrapper simples
+#include "../core/audio_core.h"
+#include "../scenes/menu.h"
+#include "creditos.h"
+// #include "gameplay.h" // Futuro
 
-#define TOTAL_FRAMES 106
+static EstadoJogo estadoAtual = TELA_MENU;
 
-static Texture2D menuFrames[TOTAL_FRAMES + 1];
-static int currentFrame = 0;
-static bool reverseAnimation = false;
+void InicializarGerenciadorCenas(void) {
+    InitWindow(1280, 720, "CInrilla");
+    SetTargetFPS(60);
+    
+    InicializarSistemaAudio(); // Core audio
+    InicializarMenu();         // Carrega assets do menu
+    InicializarCreditos();     // Prepara assets dos creditos
+}
 
-void InitGraphics(void) {
-    // Carregar frames da animação
-    for (int i = 0; i <= TOTAL_FRAMES; i++) {
-        char path[64];
-        sprintf(path, "assets/frames_menu/frame_%03d.png", i + 1);
-        menuFrames[i] = LoadTexture(path);
+void AtualizarGerenciadorCenas(void) {
+    switch (estadoAtual) {
+        case TELA_MENU:
+            // O UpdateMenu retorna o novo estado desejado
+            estadoAtual = AtualizarMenu(); 
+            break;
+        case TELA_JOGO:
+            // AtualizarGameplay();
+            break;
+        case TELA_CREDITOS:
+            estadoAtual = AtualizarCreditos();
+            break;
+        case TELA_SAIR:
+            break;
     }
 }
 
-void DrawMenuBackground(void) {
-    // Atualizar animação
-    if (!reverseAnimation) {
-        currentFrame++;
-        if (currentFrame >= TOTAL_FRAMES) reverseAnimation = true;
-    } else {
-        currentFrame--;
-        if (currentFrame == 0) reverseAnimation = false;
+void DesenharGerenciadorCenas(void) {
+    BeginDrawing();
+    
+    switch (estadoAtual) {
+        case TELA_MENU:
+            DesenharMenu();
+            break;
+        case TELA_JOGO:
+            ClearBackground(BLACK);
+            DrawText("JOGO EM DESENVOLVIMENTO", 400, 360, 20, WHITE);
+            break;
+        case TELA_CREDITOS:
+            DesenharCreditos();
+            break;
+        default: break;
     }
     
-    DrawTexture(menuFrames[currentFrame], 0, 0, WHITE);
+    EndDrawing();
 }
 
-void DrawButton(Button* button) {
-    Color buttonColor = button->isHovered ? 
-        (Color){ 50, 50, 50, 255 } : 
-        (Color){ 30, 30, 30, 150 };
-    
-    DrawRectangleRec(button->bounds, buttonColor);
-    
-    // Centralizar texto
-    const int fontSize = 20;
-    int textWidth = MeasureText(button->text, fontSize);
-    int x = button->bounds.x + (button->bounds.width - textWidth) / 2;
-    int y = button->bounds.y + (button->bounds.height - fontSize) / 2;
-    
-    DrawText(button->text, x, y, fontSize, RAYWHITE);
+void EncerrarGerenciadorCenas(void) {
+    EncerrarMenu();
+    EncerrarCreditos();
+    EncerrarSistemaAudio();
+    CloseWindow();
 }
 
-void DrawFooter(const char* text) {
-    const int fontSize = 20;
-    int textWidth = MeasureText(text, fontSize);
-    int x = (1280 / 2) - (textWidth / 2);
-    int y = 700;
-    
-    DrawText(text, x, y, fontSize, WHITE);
+bool DeveFecharJogo(void) {
+    return WindowShouldClose() || estadoAtual == TELA_SAIR;
 }
 
-void CloseGraphics(void) {
-    for (int i = 0; i <= TOTAL_FRAMES; i++) {
-        UnloadTexture(menuFrames[i]);
-    }
+void MudarEstado(EstadoJogo novoEstado) {
+    estadoAtual = novoEstado;
 }

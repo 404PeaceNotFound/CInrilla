@@ -1,67 +1,159 @@
 #include "menu.h"
-#include "audio.h"
-#include "scene_manager.h"
-#include "creditos.h"  // Para TelaCreditos()
-#include <stdio.h>     // Para printf()
+#include "../core/window.h"
+#include "../core/audio_core.h"
+#include "../ui/widgets.h"
+#include <raylib.h>
+#include <raymath.h>
 
-static Button buttons[3];
-static bool mouseFlag = false;
+// Definições específicas da animação do Menu
+#define CONTAGEM_FRAME_X 11
+#define CONTAGEM_FRAME_Y 11
+#define FPS_FRAME 30
+#define TEMPO_FRAME (1.0f / FPS_FRAME)
 
-void InitMenu(void)
-{
-    // Configurar botões
-    buttons[BUTTON_START] = (Button){ {-5, 300, 300, 60}, "Iniciar Jogo", BUTTON_START, false };
-    buttons[BUTTON_CREDITS] = (Button){ {-5, 400, 300, 60}, "Créditos", BUTTON_CREDITS, false };
-    buttons[BUTTON_QUIT] = (Button){ {-5, 500, 300, 60}, "Sair", BUTTON_QUIT, false };
+// Variáveis de estado da cena (STATIC)
+static Texture2D spriteMenu;
+static int indiceFrame_x = 0;
+static int indiceFrame_y = 0;
+static bool inverterAnimacao = false;
+static float temporizadorFrame = TEMPO_FRAME;
+
+// Botões do menu
+static Botao btnJogar;
+static Botao btnCreditos;
+static Botao btnSair;
+
+void InicializarMenu(void) {
+    spriteMenu = LoadTexture("assets/sprites_menu/menu_spritesheet.png");
+    
+    // Inicialização de variáveis de animação
+    indiceFrame_x = 0;
+    indiceFrame_y = 0;
+    inverterAnimacao = false;
+    temporizadorFrame = TEMPO_FRAME;
+
+    // Inicialização dos botões
+    int larguraBotao = 200;
+    int alturaBotao = 50;
+    int x = LARGURA_TELA/2 - larguraBotao/2;
+    int y = ALTURA_TELA/2 - alturaBotao/2;
+
+    btnJogar = (Botao){ 
+        {x, y, larguraBotao, alturaBotao}, 
+        "JOGAR", 
+        TELA_JOGO, 
+        false 
+    };
+
+    btnCreditos = (Botao){ 
+        {x, y + 60, larguraBotao, alturaBotao}, 
+        "CRÉDITOS", 
+        TELA_CREDITOS, 
+        false 
+    };
+
+    btnSair = (Botao){ 
+        {x, y + 120, larguraBotao, alturaBotao}, 
+        "SAIR", 
+        TELA_SAIR, 
+        false 
+    };
 }
 
-GameState UpdateMenu(void)
-{
-    mouseFlag = false;
-    
-    for (int i = 0; i < 3; i++) {
-        buttons[i].isHovered = CheckCollisionPointRec(GetMousePosition(), buttons[i].bounds);
+EstadoJogo AtualizarMenu(void) {
+    temporizadorFrame -= GetFrameTime();
+
+    if (temporizadorFrame < 0) {
+        temporizadorFrame = TEMPO_FRAME;
+
+        // Lógica de loop dos frames (mantida da sua versão)
+        if (!inverterAnimacao) {
+            indiceFrame_x++;
+            if (indiceFrame_x >= CONTAGEM_FRAME_X) {
+                indiceFrame_x = 0;
+                indiceFrame_y++;
+            }
+        } else {
+            indiceFrame_x--;
+            if (indiceFrame_x < 0) {
+                indiceFrame_x = CONTAGEM_FRAME_X - 1;
+                indiceFrame_y--;
+            }
+        }
         
-        if (buttons[i].isHovered) {
-            if (!mouseFlag) {
-                PlayUISound();
-                mouseFlag = true;
-            }
-            
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                switch (buttons[i].type) {
-                    case BUTTON_START:
-                        printf("Botão JOGAR foi clicado\n");
-                        return SCREEN_GAME;
-                    case BUTTON_CREDITS:
-                        TelaCreditos();
-                        return SCREEN_CREDITS;
-                    case BUTTON_QUIT:
-                        return SCREEN_EXIT;
-                }
-            }
+        // Lógica de inversão da animação
+        if (indiceFrame_x == CONTAGEM_FRAME_X - 1 && indiceFrame_y == CONTAGEM_FRAME_Y - 1) {
+            inverterAnimacao = true;
+        } else if (indiceFrame_x <= 0 && indiceFrame_y <= 0) {
+            inverterAnimacao = false;
         }
     }
     
-    return SCREEN_MENU;
-}
+    // LÓGICA DOS BOTÕES - AGORA FUNCIONAL
+    Vector2 mousePos = GetMousePosition();
+    btnJogar.estaSelecionado = CheckCollisionPointRec(mousePos, btnJogar.retangulo);
+    btnCreditos.estaSelecionado = CheckCollisionPointRec(mousePos, btnCreditos.retangulo);
+    btnSair.estaSelecionado = CheckCollisionPointRec(mousePos, btnSair.retangulo);
 
-void DrawMenu(void) {
-    DrawMenuBackground();
-    
-    // Título
-    DrawText("CInrilla:", 264, 104, 55, BLACK);
-    DrawText("CInrilla:", 260, 100, 55, WHITE);
-    
-    // Botões
-    for (int i = 0; i < 3; i++) {
-        DrawButton(&buttons[i]);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (btnJogar.estaSelecionado) {
+            TocarSomUI(); // Toca som de confirmação
+            return btnJogar.acao;
+        } else if (btnCreditos.estaSelecionado) {
+            TocarSomUI();
+            return btnCreditos.acao;
+        } else if (btnSair.estaSelecionado) {
+            TocarSomUI();
+            return btnSair.acao;
+        }
     }
-    
-    // Footer
-    DrawFooter("CIN-UFPE 2025");
+
+    // Tecla ESC também sai
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        return TELA_SAIR;
+    }
+
+    return TELA_MENU; 
 }
 
-void CloseMenu(void) {
-    // Limpar recursos do menu se necessário
+void DesenharMenu(void) {
+    ClearBackground(RAYWHITE);
+    
+    // Cálculo da área de origem na spritesheet
+    Rectangle origem = (Rectangle){
+        indiceFrame_x * LARGURA_TELA, 
+        indiceFrame_y * ALTURA_TELA, 
+        LARGURA_TELA, 
+        ALTURA_TELA
+    };
+    
+    // Cálculo da área de destino (centralizada)
+    Rectangle destino = (Rectangle){
+        LARGURA_TELA/2.0f, 
+        ALTURA_TELA/2.0f, 
+        origem.width, 
+        origem.height
+    };
+    
+    // Desenho da animação de fundo
+    DrawTexturePro(
+        spriteMenu, 
+        origem, 
+        destino, 
+        (Vector2){destino.width/2.0f, destino.height/2.0f},
+        0, 
+        WHITE
+    );
+
+    // Desenho dos botões
+    DesenharBotao(&btnJogar);
+    DesenharBotao(&btnCreditos);
+    DesenharBotao(&btnSair);
+
+    // Texto do título
+    DrawText("CINRILLA", LARGURA_TELA/2 - MeasureText("CINRILLA", 60)/2, 100, 60, WHITE);
+}
+
+void EncerrarMenu(void) {
+    UnloadTexture(spriteMenu);
 }

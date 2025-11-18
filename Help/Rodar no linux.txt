@@ -1,1 +1,0 @@
-no vscode, com o Makefile aberto, pressione: 'CRTL + SHIFT + B'

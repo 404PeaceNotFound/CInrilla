@@ -3,7 +3,7 @@
 Em desenvolvimento...
 
 arquitetura:
-Equipe8 (futuro CInrella)/
+Equipe8 (futuro CInrilla)/
 ├── Makefile
 ├── assets/                 # Sprites, Sons, Fontes
 └── src/

@@ -1,26 +1,13 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include "raylib.h"
-#include "game_logic.h"  // Agora inclui game.h para conhecer GameState
+#include <raylib.h>
+#include "scene_manager.h" // Necessário para a definição de EstadoJogo
 
-typedef enum {
-    BUTTON_START,
-    BUTTON_CREDITS,
-    BUTTON_QUIT
-} ButtonType;
-
-typedef struct {
-    Rectangle bounds;
-    const char* text;
-    ButtonType type;
-    bool isHovered;
-} Button;
-
-void InitMenu(void);
-GameState UpdateMenu(void);  // Agora retorna GameState corretamente
-void DrawMenu(void);
-void CloseMenu(void);
-void DrawButton(Button* button);
+// Funções de ciclo de vida da cena
+void InicializarMenu(void);
+EstadoJogo AtualizarMenu(void);
+void DesenharMenu(void);
+void EncerrarMenu(void);
 
 #endif
