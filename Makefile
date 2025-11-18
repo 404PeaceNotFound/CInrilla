@@ -1,7 +1,14 @@
 CC = gcc
 CFLAGS = -Wall -std=c99
 LIBS = -lraylib -lm -lpthread -ldl -lrt -lGL -lX11
-SRC = src/main.c src/game.c src/menu.c src/audio.c src/graphics.c src/creditos.c
+
+# coloca aqui os files que vao rodar
+SRC = src/main.c \
+	  src/logica/game_logic.c \
+	  src/telas/menu.c \
+	  src/audio/audio.c \
+	  src/telas/scene_manager.c \
+	  src/telas/creditos.c
 TARGET = jogo
 
 $(TARGET): $(SRC)
