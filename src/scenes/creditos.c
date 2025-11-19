@@ -63,12 +63,12 @@ void DesenharCreditos(void) {
     
     // Desenho do Conteúdo de Créditos
     DrawText("CRÉDITOS", LARGURA_TELA/2 - MeasureText("CRÉDITOS", 50)/2, 50, 50, WHITE);
-    DrawText("Equipe:", 238, 150, 30, WHITE);
-    DrawText("Gabriel Vieira <gvnrb>", 238, 190, 30, WHITE);
-    DrawText("Guilherme Vitor <gvca>", 238, 190, 30, WHITE);
-    DrawText("Joao Victor <jv>", 238, 190, 30, WHITE);
-    DrawText("Jose <j>", 238, 190, 30, WHITE);
-    DrawText("Luciano <l>", 238, 190, 30, WHITE);
+    DrawText("Equipe:", 240, 200, 30, WHITE);
+    DrawText("Gabriel Vieira <gvnrb>", 240, 250, 30, WHITE);
+    DrawText("Guilherme Vitor <gvca>", 240, 300, 30, WHITE);
+    DrawText("Joao Victor <jv>", 240, 350, 30, WHITE);
+    DrawText("Jose <j>", 240, 400, 30, WHITE);
+    DrawText("Luciano <l>", 240, 450, 30, WHITE);
 
     
     // Desenho do Botão (Reutilizando UI/Widgets)
