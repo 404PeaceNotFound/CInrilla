@@ -7,9 +7,9 @@
 #include <stdbool.h>
 
 // --- Definições específicas da Animação de Créditos ---
-#define CREDITOS_FRAME_X 11
+#define CREDITOS_FRAME_X 6
 #define CREDITOS_FRAME_Y 11
-#define CREDITOS_FPS 24
+#define CREDITOS_FPS 30
 
 // Variáveis de Estado da Cena
 static AnimacaoSpritesheet animacaoFundoCreditos;
