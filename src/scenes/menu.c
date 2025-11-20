@@ -151,7 +151,7 @@ void DesenharMenu(void) {
     DesenharBotao(&btnSair);
 
     // Texto do título
-    DrawText("CINRILLA", LARGURA_TELA/2 - MeasureText("CINRILLA", 60)/2, 100, 60, WHITE);
+    DrawText("CInrilla", LARGURA_TELA/2 - MeasureText("CInrilla", 60)/2, 100, 60, WHITE);
 }
 
 void EncerrarMenu(void) {
