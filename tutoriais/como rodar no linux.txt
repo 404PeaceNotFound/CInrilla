@@ -1,3 +1,7 @@
+primeiro veja o video p/ instalar o raylib (5min):
+https://youtu.be/UExZAEG4CF4?si=peifzjMeZTAVlMB5
+
+rodando o game:
 1) dentro do vscode
 2) abra um novo terminal 
 2.1) verifique se a pasta esta correta: " ../../Equipe8 " (futura ../../CInrilla)
