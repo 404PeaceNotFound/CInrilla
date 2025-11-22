@@ -33,7 +33,7 @@ void Menu_Draw(void) {
     Render_DrawAnim(animMenu, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f});
 
 
-    UI_DesenharTextoCentralizado(TITULO_JOGO, 100, 60, RED);
+    UI_DesenharTextoCentralizado(TITULO_JOGO, 100, 60, WHITE);
     UI_DesenharBotao(&btnJogar);
     UI_DesenharBotao(&btnCreditos);
 }
