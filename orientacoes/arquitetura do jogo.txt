@@ -1,0 +1,41 @@
+arquitetura:
+
+CInrilla/
+├── Makefile
+├── assets/
+│   ├── sounds/
+│   └── sprites/
+└── src/
+    ├── main.c
+    ├── config/
+    │   └── config.h            # Centraliza valores como: velocidade do player, gravidade, spawn rate, caminhos dos assets
+    ├── core/
+    │   ├── core_platform.h     # Gerencia: janela + input + time + audio (unificado)
+    │   ├── core_platform.c
+    │   ├── event_bus.h
+    │   └── event_bus.c
+    ├── data/
+    │   ├── entity_types.h      # Structs de Player, Enemy (sem lógica)
+    │   └── map_data.h          # Structs do mapa
+    ├── entities/
+    │   ├── entities.h          # player/enemy/item/consumiveis
+    │   └── entities.c          
+    ├── math/
+    │   └── geometry.c          # opcional(Vazio/Opcional, não incluído no código abaixo por falta de uso imediato)
+    ├── systems/
+    │   ├── systems.h
+    │   ├── physics.c           # Colisões e Movimento (trata player e enemies igual)
+    │   ├── combat.c            # Ataque e Vida (lógica de dano)(Skeleton para expansão futura)
+    │   └── render.c            # Desenha o mapa e entidades (inclui Câmera)
+    ├── scenes/
+    │   ├── scene_manager.h     # Troca entre Menu -> Game -> GameOver
+    │   ├── scene_manager.c
+    │   ├── menu.c
+    │   ├── gameplay.c          # Onde o jogo roda (une Systems e Entities)
+    │   └── credits.c
+    ├── ui/
+    │   ├── ui.h                # Barra de vida, pontuação (Lê dados, não altera), Botões, Caixas de texto
+    │   └── ui.c
+    └── assets/
+        ├── assets.h            # Faz o preload dos arquivos png, audio, etc. (vazio por enquanto)
+        └── asset_manager.c
