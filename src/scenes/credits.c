@@ -9,7 +9,7 @@ static BotaoUI btnVoltar;
 
 void Creditos_Init(void) {
     if (inicializado) return;
-    animFundo = Render_CreateAnim("assets/sprites_creditos/sheet_1.png", 6, 11, 30, LARGURA_TELA, ALTURA_TELA);
+    animFundo = Render_CreateAnim("assets/sprites/creditos/sheet_1.png", 6, 11, 30, LARGURA_TELA, ALTURA_TELA);
     btnVoltar = (BotaoUI){{LARGURA_TELA - 280, ALTURA_TELA - 80, 200, 50}, "VOLTAR", false};
     inicializado = true;
 }
