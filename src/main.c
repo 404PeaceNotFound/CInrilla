@@ -1,14 +1,17 @@
+#include "core/core_platform.h"
 #include "scenes/scene_manager.h"
 
 int main(void) {
-    // Inicializa Janela, Audio e o Gerenciador de Cenas
-    InicializarGerenciadorCenas();
-    
-    while (!DeveFecharJogo()) {
-        AtualizarGerenciadorCenas();
-        DesenharGerenciadorCenas();
+    Core_Init();
+    SM_Init();
+
+    while (!Core_ShouldClose()) {
+        SM_Update();
+        SM_Draw();
     }
+
+    SM_Deinit();
+    Core_Close();
     
-    EncerrarGerenciadorCenas();
     return 0;
 }
