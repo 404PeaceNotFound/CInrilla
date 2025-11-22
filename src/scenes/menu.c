@@ -6,7 +6,7 @@
 static AnimacaoSpritesheet animMenu;
 static bool menuinicializado = false;
 static BotaoUI btnJogar = {{LARGURA_TELA/2 - 100, 300, 200, 50}, "JOGAR", false};
-static BotaoUI btnCreditos = {{LARGURA_TELA/2 - 100, 400, 200, 50}, "CREDITOS", false};
+static BotaoUI btnCreditos = {{LARGURA_TELA/2 - 100, 400, 200, 50}, "CRÉDITOS", false};
 
 void Menu_Init(void) {
     if (menuinicializado) return;
