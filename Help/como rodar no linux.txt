@@ -1,7 +1,0 @@
-1) dentro do vscode
-2) abra um novo terminal 
-2.1) verifique se a pasta esta correta: " ../../Equipe8 " (futura ../../CInrilla)
-3) digite: " make "
-4) depois digite: " ./CInrilla "
-
-quando fechar o jogo e quiser abrir novamente digite: " make clean " e repita o processo acima.
