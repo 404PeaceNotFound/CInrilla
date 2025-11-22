@@ -1,0 +1,12 @@
+primeiro veja o video p/ instalar o raylib (5min):
+https://youtu.be/UExZAEG4CF4?si=peifzjMeZTAVlMB5
+
+rodando o game:
+1) dentro do vscode
+2) abra um novo terminal 
+2.1) verifique se a pasta em referencia esta correta. (../CInrilla/src)
+3) no terminal, digite: " cd CInrilla/src "
+4) depois digite: " make "
+4) depois digite: " ./CInrilla "
+
+quando fechar o jogo e quiser abrir novamente digite: " make clean " e repita o processo acima.

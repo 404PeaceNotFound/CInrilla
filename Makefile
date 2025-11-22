@@ -1,50 +1,39 @@
-# ======================================
-#   Makefile multiplataforma - Raylib
-# ======================================
-
-# Nome do executável
-TARGET = jogo
-
-# Diretório com o código-fonte
-SRC_DIR = src
-SRC = $(wildcard $(SRC_DIR)/*.c)
-
-# Compilador
 CC = gcc
+CFLAGS = -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces
+INCLUDES = -I src/ -I src/core -I src/scenes -I src/systems -I src/entities -I src/ui -I src/data -I src/config
 
-# Flags de compilação
-CFLAGS = -Wall -std=c99
-
-# Detecta sistema operacional
+# Detecta OS
 ifeq ($(OS),Windows_NT)
-    # --- CONFIGURAÇÃO WINDOWS ---
-    RM = del /Q
-    EXEC = $(TARGET).exe
     LIBS = -lraylib -lopengl32 -lgdi32 -lwinmm
-    CONSOLE_FLAG = -Wl,--subsystem,console
 else
-    # --- CONFIGURAÇÃO LINUX ---
-    RM = rm -f
-    EXEC = $(TARGET)
-    LIBS = -lraylib -lm -lpthread -ldl -lrt -lGL -lX11
-    CONSOLE_FLAG =
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        LIBS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        LIBS = -lraylib -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+    endif
 endif
 
-# Regra padrão: compilar
-all: $(EXEC)
+SRC_DIR = src
+OBJ_DIR = obj
+BIN = CInrilla
 
-$(EXEC): $(SRC)
-	@echo Compilando fontes...
-	$(CC) $(SRC) -o $(EXEC) $(CFLAGS) $(LIBS) $(CONSOLE_FLAG)
-	@echo Build concluído com sucesso!
+# Busca recursiva de arquivos .c
+SRCS = $(shell find $(SRC_DIR) -name "*.c")
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
-# Rodar o jogo
-run: all
-	@echo Executando $(EXEC)...
-	cd $(dir $(EXEC)) && ./$(notdir $(EXEC))
+all: $(BIN)
 
-# Limpar builds antigos
+$(BIN): $(OBJS)
+	$(CC) $(OBJS) -o $@ $(LIBS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
 clean:
-	@echo Limpando...
-	$(RM) $(EXEC)
-	@echo Limpo!
+	rm -rf $(OBJ_DIR) $(BIN)
+
+run: all
+	./$(BIN)
