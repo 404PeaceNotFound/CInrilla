@@ -36,10 +36,13 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
         player->speed = -PLAYER_JUMP_SPD;
         player->canJump = false;
         player->state = PlayerJump;
+        PlaySound(player->soundPlayer.Jump);
+        
     }
 
     if (IsKeyDown(KEY_Z) && player->canJump) {
         player->isatk = true;
+        PlaySound(player->soundPlayer.Atk);
     }
     
 
@@ -52,17 +55,6 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
     else{
         if (IsSoundPlaying(player->soundPlayer.Run)) {
             StopSound(player->soundPlayer.Run);
-    }
-}
-
-    if(player->state == PlayerAtk){
-        if (!IsSoundPlaying(player->soundPlayer.Atk)) {
-            PlaySound(player->soundPlayer.Atk);
-        }
-    }
-    else{
-        if (IsSoundPlaying(player->soundPlayer.Atk)) {
-            StopSound(player->soundPlayer.Atk);
     }
 }
 
