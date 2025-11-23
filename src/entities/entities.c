@@ -41,4 +41,18 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
     if (IsKeyDown(KEY_Z) && player->canJump) {
         player->isatk = true;
     }
+    
+
+    //Controle de Audio
+    if(player->state == PlayerRun){
+        if (!IsSoundPlaying(player->soundPlayer.Run)) {
+            PlaySound(player->soundPlayer.Run);
+        }
+    }
+    else{
+        if (IsSoundPlaying(player->soundPlayer.Run)) {
+            StopSound(player->soundPlayer.Run);
+    }
+}
+
 }

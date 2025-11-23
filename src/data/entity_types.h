@@ -26,7 +26,13 @@ typedef struct {
     int larguraFrame;
     int alturaFrame;
     bool loop;
+    bool ismenu;
 } AnimacaoSpritesheet;
+
+typedef struct{
+    Sound Run;
+   
+}Sounds;
 
 // Player
 typedef struct {
@@ -38,6 +44,7 @@ typedef struct {
     int PlayerDirection;
     AnimacaoSpritesheet anim[PlayerStateCount];
     PlayerState state;
+    Sounds soundPlayer;
 } Player;
 
 #endif

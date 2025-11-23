@@ -13,6 +13,9 @@ void initPlayer(Player *player){
     player->state = PlayerIdle;
     player->isatk = false;
     player->PlayerDirection = 1;
+    
+    //Carregar Sons
+    player->soundPlayer.Run = LoadSound("assets/sounds/Player/Run.mp3");
 
     player->anim[PlayerIdle] = Render_CreateAnim("assets/sprites/character/Idle/Idle-Sheet.png", //IDLE
         4,   // framesX 
@@ -20,28 +23,28 @@ void initPlayer(Player *player){
         6,   // fps (0 para estático)
         64,  // largura do frame
         64,   // altura do frame
-        true);
+        true, false);
     player->anim[PlayerRun] = Render_CreateAnim("assets/sprites/character/Run/Run-Sheet.png", //CORRER
         8,   // framesX 
         1,   // framesY
         6,   // fps (0 para estático)
         80,  // largura do frame
-        80,   // altura do frame
-        true);
+        64,   // altura do frame
+        true, false);
     player->anim[PlayerJump] = Render_CreateAnim("assets/sprites/character/Jumlp-All/Jump-All-Sheet.png", //PULAR
         15,   // framesX 
         1,   // framesY
         6,   // fps (0 para estático)
         64,  // largura do frame
         64,   // altura do frame
-        true);
+        true, false);
     player->anim[PlayerAtk] = Render_CreateAnim("assets/sprites/character/Attack-01/Attack-01-Sheet.png", //Atacar
         8,   // framesX 
         1,   // framesY
         6,   // fps (0 para estático)
         96,  // largura do frame
-        80,   // altura do frame
-        false);
+        64,   // altura do frame
+        false, false);
 
     player->anim[player->state].indiceFrameX = 0;
     player->anim[player->state].indiceFrameY = 0; 
@@ -65,7 +68,7 @@ void Render_UpdateCamera(Camera2D *camera, Player *player, int width, int height
 
 // --- Animation System Logic (Ex-spritesheet_animacao) ---
 
-AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fps, int w, int h, bool loopar) { //Carrega Sprite
+AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fps, int w, int h, bool loopar, bool menu) { //Carrega Sprite
     AnimacaoSpritesheet anim = {0};
     anim.spriteSheet = LoadTexture(path);
     anim.framesX = fX;
@@ -76,6 +79,7 @@ AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fp
     anim.alturaFrame = h;
     anim.inverteAnimacao = false;
     anim.loop = loopar;
+    anim.ismenu = menu;
     return anim;
 }
 
@@ -88,21 +92,23 @@ void Render_UpdateAnim(AnimacaoSpritesheet *anim, float dt) { //motor dos sprite
             anim->indiceFrameX++;
             if (anim->indiceFrameX >= anim->framesX) {
                 anim->indiceFrameX = 0;
-                anim->indiceFrameY++;
+                if(anim->ismenu) anim->indiceFrameY++;
             }
         } else {
             anim->indiceFrameX--;
             if (anim->indiceFrameX < 0) {
                 anim->indiceFrameX = anim->framesX - 1;
-                anim->indiceFrameY--;
+                if(anim->ismenu) anim->indiceFrameY--;
             }
         }
         
         // Check boundaries for loop/invert
+        if(anim->loop){
         if (anim->indiceFrameX >= anim->framesX - 1 && anim->indiceFrameY >= anim->framesY - 1)
             anim->inverteAnimacao = true;
         else if (anim->indiceFrameX <= 0 && anim->indiceFrameY <= 0)
             anim->inverteAnimacao = false;
+        }
     }
 }
 

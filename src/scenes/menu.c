@@ -10,7 +10,7 @@ static BotaoUI btnCreditos = {{LARGURA_TELA/2 - 100, 400, 200, 50}, "CRÉDITOS",
 
 void Menu_Init(void) {
     if (menuinicializado) return;
-    animMenu = Render_CreateAnim("assets/sprites/menu/menu_spritesheet.png", 11, 11, 30, LARGURA_TELA, ALTURA_TELA, true);
+    animMenu = Render_CreateAnim("assets/sprites/menu/menu_spritesheet.png", 11, 11, 30, LARGURA_TELA, ALTURA_TELA, true, true);
     menuinicializado = true;
 }
 
