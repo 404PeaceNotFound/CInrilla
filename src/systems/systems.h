@@ -8,6 +8,7 @@
 void Physics_UpdatePlayer(Player *player, EnvItem *envItems, int envLength, float dt);
 
 // Render & Animation
+void initPlayer(Player *player);
 void Render_Map(EnvItem *envItems, int envLength);
 void Render_Player(Player *player);
 void Render_UpdateCamera(Camera2D *camera, Player *player, int width, int height);

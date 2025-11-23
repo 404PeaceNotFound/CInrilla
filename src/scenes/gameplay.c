@@ -19,14 +19,16 @@ void Gameplay_Init(void) {
     player.position = (Vector2){ 600, 300 };
     player.speed = 0;
     player.canJump = false;
-    
+    player.isatk = false;
+
+    initPlayer(&player);
     camera.target = player.position;
-    camera.offset = (Vector2){ LARGURA_TELA/2.0f, ALTURA_TELA/2.0f };
+    camera.offset = (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.5f;
 }
 
-EstadoJogo Gameplay_Update(void) {
+EstadoJogo Gameplay_Update(void) { //Aqui rola a zuera de atualizar com o tempo
     float dt = GetFrameTime();
 
     if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
@@ -40,10 +42,13 @@ EstadoJogo Gameplay_Update(void) {
     // 3. Atualiza Câmera
     Render_UpdateCamera(&camera, &player, LARGURA_TELA, ALTURA_TELA);
 
+    // 3. Atualiza Sprite
+    Render_UpdateAnim(&player.anim[player.state], dt);
+
     return TELA_GAMEPLAY;
 }
 
-void Gameplay_Draw(void) {
+void Gameplay_Draw(void) { //Aqui rola a zuera do desenho 
     ClearBackground(LIGHTGRAY);
     
     BeginMode2D(camera);

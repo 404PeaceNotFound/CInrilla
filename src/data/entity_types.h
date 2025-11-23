@@ -5,6 +5,15 @@
 #include <stdbool.h>
 
 // Estrutura para Animação (Migrada de spritesheet_animacao)
+
+typedef enum{
+    PlayerIdle, //0
+    PlayerRun, //1
+    PlayerJump, //2
+    PlayerAtk, //3
+    PlayerStateCount, //4
+}PlayerState;
+
 typedef struct {
     Texture2D spriteSheet;
     int framesX;
@@ -14,8 +23,8 @@ typedef struct {
     float tempoPorFrame;
     float temporizador;
     bool inverteAnimacao;
-    int larguraDestino;
-    int alturaDestino;
+    int larguraFrame;
+    int alturaFrame;
 } AnimacaoSpritesheet;
 
 // Player
@@ -23,7 +32,11 @@ typedef struct {
     Vector2 position;
     float speed; // Velocidade vertical (Y)
     bool canJump;
+    bool isatk;
     int health;
+    int PlayerDirection;
+    AnimacaoSpritesheet anim[PlayerStateCount];
+    PlayerState state;
 } Player;
 
 #endif
