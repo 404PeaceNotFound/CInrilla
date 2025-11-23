@@ -37,7 +37,9 @@ void Gameplay_Init(void) {
 
     //geração de inimigos
 
-    enemies[enemyCount++] = Enemy_Create((Vector2){500, 400}, 400, 700, 60); // inimigos no chão 
+    enemyCount = 0;
+
+    enemies[enemyCount++] = Enemy_Create((Vector2){500, 400}, 200, 500, 60); // inimigos no chão 
 
     float plataformay = envItems[2].rect.y;
     enemies[enemyCount++]= Enemy_Create((Vector2){450, plataformay}, 300, 650, 80); // inimigos na plataforma 
@@ -74,9 +76,9 @@ void Gameplay_Draw(void) {
         Render_Player(&player);
         //render inimigos
         for(int i =0; i < enemyCount; i++){
-            //DrawEnemy(&enemies[i]);
+            DrawEnemy(&enemies[i]);
             DrawRectangle(enemies[i].position.x, enemies[i].position.y, 40, 40, RED); // teste para ver se os inimigos estão sendogerados
-            DrawCircle(enemies[i].position.x, enemies[i].position.y, 5, GREEN);
+            DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
         }
     EndMode2D();
     
