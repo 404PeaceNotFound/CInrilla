@@ -1,10 +1,9 @@
-// enemies.h
-#ifndef ENEMIES_H
-#define ENEMIES_H
+#ifndef ENEMY_SYSTEM_H
+#define ENEMY_SYSTEM_H
 
 #include <raylib.h>   
 
-typedef enum {
+typedef enum {  
     ENEMY_STATE_IDLE,
     ENEMY_STATE_WALK,
     ENEMY_STATE_RUN,
@@ -43,6 +42,10 @@ typedef struct Enemy {
     EnemyState state;
 
     int active;         // 1 = ativo, 0 = desligado
+
+    // texturas 2D 
+    Texture2D texture;
+    int useTexture; // 0 = retângulo, 1 = sprite
 } Enemy;
 
 // inicializa um inimigo já alocado
