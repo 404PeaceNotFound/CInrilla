@@ -31,6 +31,7 @@ typedef struct {
 
 typedef struct{
     Sound Run;
+    Sound Atk;
    
 }Sounds;
 

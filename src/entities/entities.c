@@ -55,4 +55,15 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
     }
 }
 
+    if(player->state == PlayerAtk){
+        if (!IsSoundPlaying(player->soundPlayer.Atk)) {
+            PlaySound(player->soundPlayer.Atk);
+        }
+    }
+    else{
+        if (IsSoundPlaying(player->soundPlayer.Atk)) {
+            StopSound(player->soundPlayer.Atk);
+    }
+}
+
 }

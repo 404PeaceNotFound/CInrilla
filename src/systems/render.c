@@ -13,9 +13,10 @@ void initPlayer(Player *player){
     player->state = PlayerIdle;
     player->isatk = false;
     player->PlayerDirection = 1;
-    
+
     //Carregar Sons
     player->soundPlayer.Run = LoadSound("assets/sounds/Player/Run.mp3");
+    player->soundPlayer.Atk = LoadSound("assets/sounds/Player/Pack.mp3");
 
     player->anim[PlayerIdle] = Render_CreateAnim("assets/sprites/character/Idle/Idle-Sheet.png", //IDLE
         4,   // framesX 
