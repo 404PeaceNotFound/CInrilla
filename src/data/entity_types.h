@@ -25,6 +25,7 @@ typedef struct {
     bool inverteAnimacao;
     int larguraFrame;
     int alturaFrame;
+    bool loop;
 } AnimacaoSpritesheet;
 
 // Player

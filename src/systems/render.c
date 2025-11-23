@@ -19,29 +19,29 @@ void initPlayer(Player *player){
         1,   // framesY
         6,   // fps (0 para estático)
         64,  // largura do frame
-        64   // altura do frame
-        );
+        64,   // altura do frame
+        true);
     player->anim[PlayerRun] = Render_CreateAnim("assets/sprites/character/Run/Run-Sheet.png", //CORRER
         8,   // framesX 
         1,   // framesY
         6,   // fps (0 para estático)
         80,  // largura do frame
-        80   // altura do frame
-        );
+        80,   // altura do frame
+        true);
     player->anim[PlayerJump] = Render_CreateAnim("assets/sprites/character/Jumlp-All/Jump-All-Sheet.png", //PULAR
         15,   // framesX 
         1,   // framesY
         6,   // fps (0 para estático)
         64,  // largura do frame
-        64   // altura do frame
-        );
+        64,   // altura do frame
+        true);
     player->anim[PlayerAtk] = Render_CreateAnim("assets/sprites/character/Attack-01/Attack-01-Sheet.png", //Atacar
         8,   // framesX 
         1,   // framesY
         6,   // fps (0 para estático)
         96,  // largura do frame
-        80   // altura do frame
-        );
+        80,   // altura do frame
+        false);
 
     player->anim[player->state].indiceFrameX = 0;
     player->anim[player->state].indiceFrameY = 0; 
@@ -50,15 +50,6 @@ void initPlayer(Player *player){
 void Render_Player(Player *player) {
 
     if(player->anim[player->state].spriteSheet.id > 0){
-
-      //  if(player->PlayerDirection == -1 && (player->state != PlayerIdle)){
-       //     player->anim[player->state].inverteAnimacao = true;
-     //   }
-      //  else{
-       //     player->anim[player->state].inverteAnimacao = false;
-
-       // }
-
         Vector2 posicaoVisual = player->position;
         posicaoVisual.y -= 32.0f; //offset
         Render_DrawAnim(player->anim[player->state], posicaoVisual); //Carregar protagonista
@@ -74,7 +65,7 @@ void Render_UpdateCamera(Camera2D *camera, Player *player, int width, int height
 
 // --- Animation System Logic (Ex-spritesheet_animacao) ---
 
-AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fps, int w, int h) { //Carrega Sprite
+AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fps, int w, int h, bool loopar) { //Carrega Sprite
     AnimacaoSpritesheet anim = {0};
     anim.spriteSheet = LoadTexture(path);
     anim.framesX = fX;
@@ -84,6 +75,7 @@ AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fp
     anim.larguraFrame = w;
     anim.alturaFrame = h;
     anim.inverteAnimacao = false;
+    anim.loop = loopar;
     return anim;
 }
 
