@@ -13,6 +13,8 @@ typedef enum {
 typedef struct Enemy {
     Vector2 position;
 
+    float verticalSpeed; // gravidade
+
     float leftLimit;
     float rightLimit;
     float speed;

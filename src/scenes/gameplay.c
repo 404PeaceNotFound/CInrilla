@@ -21,8 +21,41 @@ static Camera2D camera;
 
 #define MAX_ENEMIES 10 
 static Enemy enemies[MAX_ENEMIES];
-static int enemyCount= 0;
+static int enemyCount =0;
+//colição inimigos x player
+void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
+    if (!e->active) return;
 
+    // Hitbox do Player (ajustada para ser menor que o sprite)
+    Rectangle playerRect = { p->position.x - 20, p->position.y - 40, 40, 40 }; 
+    // Hitbox do Inimigo
+    Rectangle enemyRect = { e->position.x, e->position.y - e->height, e->width, e->height };
+
+    if (CheckCollisionRecs(playerRect, enemyRect)) {
+        
+        // LÓGICA: Pulo na Cabeça (Mario Style)
+        // Se o player está caindo (speed > 0) E os pés estão acima do centro do inimigo
+        bool isFalling = p->speed > 0;
+        bool isAbove = (p->position.y - 10) < enemyRect.y + (enemyRect.height * 0.5f);
+
+        if (isFalling && isAbove) {
+            // MATOU O INIMIGO
+            e->active = 0;      // Desativa o inimigo
+            p->speed = -400.0f; // Pulo rebote (pula de novo automaticamente)
+        } 
+        else {
+            // PLAYER TOMOU DANO (Empurrão / Knockback)
+            if (p->position.x < e->position.x) {
+                p->position.x -= 30; // Joga pra esquerda
+            } else {
+                p->position.x += 30; // Joga pra direita
+            }
+            
+            p->speed = -200; // Pulo pequeno de dano
+            
+        }
+    }
+}
 // init 
 void Gameplay_Init(void) {
     //player
@@ -39,7 +72,8 @@ void Gameplay_Init(void) {
 
     enemyCount = 0;
 
-    enemies[enemyCount++] = Enemy_Create((Vector2){500, 400}, 200, 500, 60); // inimigos no chão 
+    enemies[enemyCount++] = Enemy_Create((Vector2){500, 400}, 200, 500, 60); // inimigos no chão y=400
+    enemies[enemyCount++] = Enemy_Create((Vector2){800, 200}, 200, 500, 60); // inmigo teste de colição entre inimigos
 
     float plataformay = envItems[2].rect.y;
     enemies[enemyCount++]= Enemy_Create((Vector2){450, plataformay}, 300, 650, 80); // inimigos na plataforma 
@@ -62,7 +96,10 @@ EstadoJogo Gameplay_Update(void) {
 
     //  4. Geração de inimigos
     for(int i =0; i < enemyCount; i++){
+        //aplicação da gravidade 
+        Physics_UpdateEnemy(&enemies[i], envItems, 5, dt);
         UpdateEnemy(&enemies[i], dt);
+        CheckPlayerEnemyCollision(&player, &enemies[i]);
     }
 
     return TELA_GAMEPLAY;
@@ -77,8 +114,8 @@ void Gameplay_Draw(void) {
         //render inimigos
         for(int i =0; i < enemyCount; i++){
             DrawEnemy(&enemies[i]);
-            DrawRectangle(enemies[i].position.x, enemies[i].position.y, 40, 40, RED); // teste para ver se os inimigos estão sendogerados
-            DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
+            //DrawRectangle(enemies[i].position.x, enemies[i].position.y, 40, 40, RED); testes visuais
+            //DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
         }
     EndMode2D();
     

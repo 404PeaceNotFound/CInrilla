@@ -3,10 +3,12 @@
 
 #include "../data/entity_types.h"
 #include "../data/map_data.h"
+#include "enemy_system.h"
 
 // Physics
 void Physics_UpdatePlayer(Player *player, EnvItem *envItems, int envLength, float dt);
-
+// EPysics enemy
+void Physics_UpdateEnemy(Enemy *enemy, EnvItem *envItems, int envLength, float dt);
 // Render & Animation
 void Render_Map(EnvItem *envItems, int envLength);
 void Render_Player(Player *player);

@@ -2,9 +2,12 @@
 #include <raylib.h>  // se precisar (por causa de Vector2 / Color / etc.)
 #include <string.h>
 
-void InitEnemy(Enemy *e, Vector2 pos, float leftLimit, float rightLimit, float speed)
-{
+void InitEnemy(Enemy *e, Vector2 pos, float leftLimit, float rightLimit, float speed){
+
     e->position = pos;
+
+    e->verticalSpeed = 0.0f;
+
     e->leftLimit = leftLimit;
     e->rightLimit = rightLimit;
     e->speed = speed;
@@ -35,46 +38,13 @@ void InitEnemy(Enemy *e, Vector2 pos, float leftLimit, float rightLimit, float s
 
     e->useTexture = 0;
 }
-
 Enemy Enemy_Create(Vector2 pos, float leftLimit, float rightLimit, float walkSpeed){
     Enemy e;
     InitEnemy(&e, pos, leftLimit, rightLimit, walkSpeed);   
     return e;
 }
 
-    /*e.position   = pos;
-    e.leftLimit  = leftLimit;
-    e.rightLimit = rightLimit;
-    e.speed      = walkSpeed;
-    e.direction  = 1;
-    e.active     = 1;
-
-    e.frame = 0;
-    e.frameTime  = 0.1f;
-    e.frameTimer = 0.0f;
-
-    e.frameWidth  = 64;
-    e.frameHeight = 64;
-    e.width  = e.frameWidth;
-    e.height = e.frameHeight;
-
-    e.maxFramesIdle   = 4;
-    e.maxFramesWalk   = 6;
-    e.maxFramesRun    = 6;
-    e.maxFramesAttack = 2;
-
-    e.rowIdle   = 0;
-    e.rowWalk   = 1;
-    e.rowRun    = 2;
-    e.rowAttack = 3;
-
-    e.state = ENEMY_STATE_WALK;
-
-    return e;
-    */
-
-void UpdateEnemy(Enemy *e, float dt)
-{
+void UpdateEnemy(Enemy *e, float dt){
     if (!e->active) return;
 
     e->position.x += e->direction * e->speed * dt;
@@ -104,12 +74,6 @@ void UpdateEnemy(Enemy *e, float dt)
     }
 }
 
-/*void DrawEnemy(Enemy *e){
-    if (!e->active) return;
-
-    Rectangle rect = { e->position.x, e->position.y - e->height, e->width, e->height };
-    DrawRectangleRec(rect, BLUE);
-}*/
 void DrawEnemy(Enemy *e){ //(new draw)
     if (!e->active) return;
 
@@ -132,10 +96,12 @@ void DrawEnemy(Enemy *e){ //(new draw)
         row * e->frameHeight,
         e->frameWidth * e->direction, // flip horizontal se direção == -1
         e->frameHeight
-    };
+    };  
+
+    float spriteOffsetX = (e->frameWidth - e->width) / 2.0f;
 
     Rectangle dst = {
-        e->position.x,
+        e->position.x - spriteOffsetX, // recuar o desenhor para esquerda 
         e->position.y - e->frameHeight,
         e->frameWidth,
         e->frameHeight
