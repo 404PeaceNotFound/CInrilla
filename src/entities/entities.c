@@ -24,7 +24,7 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
         }
     }
     if (IsKeyDown(KEY_RIGHT)){
-        player->PlayerDirection = -1;
+        player->PlayerDirection = 1;
         player->position.x += PLAYER_HOR_SPD * dt;
         player->isatk = false;
         if(player->canJump){

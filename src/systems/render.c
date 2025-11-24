@@ -1,5 +1,6 @@
 #include "systems.h"
 #include <raylib.h>
+#include <math.h>
 
 // --- Map & Player Rendering ---
 void Render_Map(EnvItem *envItems, int envLength) {
@@ -57,7 +58,10 @@ void Render_Player(Player *player) {
     if(player->anim[player->state].spriteSheet.id > 0){
         Vector2 posicaoVisual = player->position;
         posicaoVisual.y -= 32.0f; //offset
-        Render_DrawAnim(player->anim[player->state], posicaoVisual); //Carregar protagonista
+
+        bool virar = (player->PlayerDirection == -1);
+
+        Render_DrawAnim(player->anim[player->state], posicaoVisual, virar); //Carregar protagonista
     }
 
     //DrawCircleV(player->position, 5.0f, GOLD); Debug
@@ -114,16 +118,22 @@ void Render_UpdateAnim(AnimacaoSpritesheet *anim, float dt) { //motor dos sprite
     }
 }
 
-void Render_DrawAnim(AnimacaoSpritesheet anim, Vector2 centroDestino) {
+void Render_DrawAnim(AnimacaoSpritesheet anim, Vector2 centroDestino, bool virar) {
     Rectangle origem = {
         anim.indiceFrameX * anim.larguraFrame,
         anim.indiceFrameY * anim.alturaFrame,
         anim.larguraFrame,
         anim.alturaFrame
     };
+
+    if (virar && !anim.ismenu) {
+        origem.width *= -1; 
+    }
+
     Rectangle destino = {
         centroDestino.x, centroDestino.y,
-        origem.width, origem.height
+        fabsf((float)origem.width),  
+        fabsf((float)origem.height)
     };
        DrawTexturePro(anim.spriteSheet, origem, destino, 
         (Vector2){destino.width/2.0f, destino.height/2.0f}, 0, WHITE);

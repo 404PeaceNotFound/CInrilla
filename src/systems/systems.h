@@ -16,7 +16,7 @@ void Render_UpdateCamera(Camera2D *camera, Player *player, int width, int height
 // Animation System
 AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fps, int w, int h, bool loopar, bool menu);
 void Render_UpdateAnim(AnimacaoSpritesheet *anim, float dt);
-void Render_DrawAnim(AnimacaoSpritesheet anim, Vector2 pos);
+void Render_DrawAnim(AnimacaoSpritesheet anim, Vector2 pos, bool virar);
 void Render_UnloadAnim(AnimacaoSpritesheet *anim);
 
 #endif
