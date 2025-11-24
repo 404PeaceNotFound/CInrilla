@@ -30,7 +30,7 @@ void initPlayer(Player *player){
     player->anim[PlayerRun] = Render_CreateAnim("assets/sprites/character/Run/Run-Sheet.png", //CORRER
         8,   // framesX 
         1,   // framesY
-        6,   // fps (0 para estático)
+        7,   // fps (0 para estático)
         80,  // largura do frame
         64,   // altura do frame
         true, false);
@@ -44,7 +44,7 @@ void initPlayer(Player *player){
     player->anim[PlayerAtk] = Render_CreateAnim("assets/sprites/character/Attack-01/Attack-01-Sheet.png", //Atacar
         8,   // framesX 
         1,   // framesY
-        6,   // fps (0 para estático)
+        8,   // fps (0 para estático)
         96,  // largura do frame
         64,   // altura do frame
         false, false);
