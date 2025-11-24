@@ -2,7 +2,11 @@
 #define ENEMY_SYSTEM_H
 
 #include <raylib.h>   
-
+typedef enum{
+    ENEMY_TYPE_BOAR,
+    ENEMY_TYPE_SMALL_BEE,
+    ENEMY_TYPE_SNAIL
+} EnemyType;
 typedef enum {  
     ENEMY_STATE_IDLE,
     ENEMY_STATE_WALK,
@@ -24,6 +28,8 @@ typedef struct Enemy {
     float height;
 
     // controle de animação
+    int animBackwards; // vai e volta dos frames
+
     int frame;
     float frameTime;
     float frameTimer;

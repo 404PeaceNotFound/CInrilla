@@ -32,32 +32,17 @@ void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
     Rectangle enemyRect = { e->position.x, e->position.y - e->height, e->width, e->height };
 
     if (CheckCollisionRecs(playerRect, enemyRect)) {
-        
-        // LÓGICA: Pulo na Cabeça (Mario Style)
-        // Se o player está caindo (speed > 0) E os pés estão acima do centro do inimigo
-        bool isFalling = p->speed > 0;
-        bool isAbove = (p->position.y - 10) < enemyRect.y + (enemyRect.height * 0.5f);
-
-        if (isFalling && isAbove) {
-            // MATOU O INIMIGO
-            e->active = 0;      // Desativa o inimigo
-            p->speed = -400.0f; // Pulo rebote (pula de novo automaticamente)
-        } 
-        else {
-            // PLAYER TOMOU DANO (Empurrão / Knockback)
-            if (p->position.x < e->position.x) {
-                p->position.x -= 30; // Joga pra esquerda
-            } else {
-                p->position.x += 30; // Joga pra direita
-            }
-            
-            p->speed = -200; // Pulo pequeno de dano
-            
+        if (p->position.x < e->position.x){
+            p->position.x -=30;
+        }else{
+            p->position.x +=30;
         }
+        p->speed -20;
     }
 }
 // init 
 void Gameplay_Init(void) {
+    Render_LoadAssets(); // chamar a função que geral as texturas
     //player
     player.position = (Vector2){ 600, 300 };
     player.speed = 0;
@@ -71,13 +56,19 @@ void Gameplay_Init(void) {
     //geração de inimigos
 
     enemyCount = 0;
-
-    enemies[enemyCount++] = Enemy_Create((Vector2){500, 400}, 200, 500, 60); // inimigos no chão y=400
-    enemies[enemyCount++] = Enemy_Create((Vector2){800, 200}, 200, 500, 60); // inmigo teste de colição entre inimigos
-
+    //javali
+    enemies[enemyCount] = Enemy_Create((Vector2){500, 400}, 200, 500, 60); // inimigos no chão y=400
+    Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
+    enemyCount++;
+    //javali 2
+    enemies[enemyCount] = Enemy_Create((Vector2){800, 400}, 700, 900, 60);
+    Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
+    enemyCount++;
+    //abelha
     float plataformay = envItems[2].rect.y;
-    enemies[enemyCount++]= Enemy_Create((Vector2){450, plataformay}, 300, 650, 80); // inimigos na plataforma 
-
+    enemies[enemyCount]= Enemy_Create((Vector2){450, plataformay}, 300, 650, 60); // inimigos na plataforma 
+    Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
+    enemyCount++;
 }
 // update 
 EstadoJogo Gameplay_Update(void) {
@@ -113,9 +104,7 @@ void Gameplay_Draw(void) {
         Render_Player(&player);
         //render inimigos
         for(int i =0; i < enemyCount; i++){
-            DrawEnemy(&enemies[i]);
-            //DrawRectangle(enemies[i].position.x, enemies[i].position.y, 40, 40, RED); testes visuais
-            //DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
+            Render_Enemy(&enemies[i]);
         }
     EndMode2D();
     
