@@ -1,5 +1,6 @@
 #include "systems.h"
 #include <raylib.h>
+#include <math.h>
 
 // --- Map & Player Rendering ---
 void Render_Map(EnvItem *envItems, int envLength) {
