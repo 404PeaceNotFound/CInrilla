@@ -84,11 +84,11 @@ void Render_Enemy(Enemy *e){
 
     if(!e->active) return;
 
-    if(!e->useTexture){ // debug
+    /*if(!e->useTexture){ // debug
         Rectangle r = {e->position.x, e->position.y - e->height, e->width,e->height};
         DrawRectangleRec(r, PURPLE);
         return;
-    }
+    }*/
 
     int row = 0; // logica das sprites
     switch(e->state){
