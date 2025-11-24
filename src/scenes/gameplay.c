@@ -170,7 +170,7 @@
                 Render_Player(&player);
                 //render inimigos
                 for(int i =0; i < enemyCount; i++){
-                    DrawEnemy(&enemies[i]);
+                    Render_Enemy(&enemies[i]);
                     //DrawRectangle(enemies[i].position.x, enemies[i].position.y, 40, 40, RED); testes visuais
                     //DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
                 }
