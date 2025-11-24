@@ -39,11 +39,12 @@ typedef struct{
 
 // Player
 typedef struct {
+    int health;
+    int damage;
     Vector2 position;
     float speed; // Velocidade vertical (Y)
     bool canJump;
     bool isatk;
-    int health;
     int PlayerDirection;
     AnimacaoSpritesheet anim[PlayerStateCount];
     PlayerState state;
