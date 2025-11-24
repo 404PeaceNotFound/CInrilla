@@ -10,6 +10,8 @@ void SM_Init(void) {
     Creditos_Init();
     Pausa_Init();
     Core_PlayMusic();
+    GameOver_Init();
+    Winner_Init();
 }
 
 void SM_Update(void) {
@@ -20,6 +22,8 @@ void SM_Update(void) {
         case TELA_GAMEPLAY: proximoEstado = Gameplay_Update(); break;
         case TELA_CREDITOS: proximoEstado = Creditos_Update(); break;
         case TELA_PAUSA: proximoEstado = Pausa_Update(); break;
+        case TELA_GAMEOVER: proximoEstado = GameOver_Update(); break;
+        case TELA_WINNER: proximoEstado = Winner_Update(); break;
         default: break;
     }
 
@@ -38,6 +42,8 @@ void SM_Draw(void) {
         case TELA_GAMEPLAY: Gameplay_Draw(); break;
         case TELA_CREDITOS: Creditos_Draw(); break;
         case TELA_PAUSA: Pausa_Draw(); break;
+        case TELA_GAMEOVER: GameOver_Draw(); break;
+        case TELA_WINNER: Winner_Draw(); break;
         default: break;
     }
 

@@ -31,6 +31,7 @@ EstadoJogo Gameplay_Update(void) {
     float dt = GetFrameTime();
 
     if (IsKeyPressed(KEY_BACKSPACE)) return TELA_PAUSA;
+    if (player.health <= 0) return TELA_GAMEOVER;
 
     // 1. Entidade processa Input
     Entities_ProcessPlayerInput(&player, dt);
