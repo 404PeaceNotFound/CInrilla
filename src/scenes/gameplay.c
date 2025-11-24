@@ -9,9 +9,9 @@ static Player player;
 static EnvItem envItems[] = {
     {{ 0, 0, 1000, 400 }, 0, LIGHTGRAY },
     {{ 0, 400, 1000, 200 }, 1, GRAY },
-    {{ 300, 200, 400, 10 }, 1, GRAY },
-    {{ 250, 300, 100, 10 }, 1, GRAY },
-    {{ 650, 300, 100, 10 }, 1, GRAY }
+    {{ 300, 250, 400, 10 }, 1, GRAY },
+    {{ 250, 320, 100, 10 }, 1, GRAY },
+    {{ 650, 320, 100, 10 }, 1, GRAY }
 };
 static Camera2D camera;
 
