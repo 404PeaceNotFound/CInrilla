@@ -1,12 +1,55 @@
 #include "systems.h"
+#include "../config/config.h"
 #include <raylib.h>
 
-// --- Map & Player Rendering ---
-void Render_Map(EnvItem *envItems, int envLength) {
-    for (int i = 0; i < envLength; i++) {
-        DrawRectangleRec(envItems[i].rect, envItems[i].color);
+// Função interna auxiliar
+static void DrawLayer(MapLayer* layer, GameMap* map) {
+    if (!layer->data || !map->texture.id) return;
+
+    for (int y = 0; y < layer->height; y++) {
+        for (int x = 0; x < layer->width; x++) {
+            // Índice no array linear
+            int index = y * layer->width + x;
+            int gid = layer->data[index];
+
+            // Se gid for 0, é vazio
+            if (gid == 0) continue;
+
+            // Ajuste do ID para índice do tileset (Tiled começa em 1)
+            int tilesetIndex = gid - map->firstGid;
+            if (tilesetIndex < 0) continue;
+
+            // Matemática para achar o retângulo de recorte (Source Rect) na textura
+            int textureX = (tilesetIndex % map->columns) * map->tileWidth;
+            int textureY = (tilesetIndex / map->columns) * map->tileHeight;
+
+            Rectangle source = { 
+                (float)textureX, 
+                (float)textureY, 
+                (float)map->tileWidth, 
+                (float)map->tileHeight 
+            };
+
+            // Onde desenhar no mundo
+            Vector2 position = { 
+                (float)x * map->tileWidth, 
+                (float)y * map->tileHeight 
+            };
+
+            DrawTextureRec(map->texture, source, position, WHITE);
+        }
     }
 }
+
+// --- Map & Player Rendering ---
+void Render_Map(GameMap* map) {
+    if (!map->loaded) return;
+
+    // Desenha camadas em ordem
+    DrawLayer(&map->layerGround, map);
+    DrawLayer(&map->layerDecor, map);
+}
+
 
 void Render_Player(Player *player) {
     Rectangle playerRect = { player->position.x - 20, player->position.y - 40, 40.0f, 40.0f };

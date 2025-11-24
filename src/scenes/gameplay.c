@@ -5,26 +5,31 @@
 #include "../entities/entities.h"
 #include "../config/config.h"
 
+#include "../data/map_loader.h"
+#include "../systems/systems.h"
+#include "../entities/entities.h"
+#include "../config/config.h"
+
 static Player player;
-static EnvItem envItems[] = {
-    {{ 0, 0, 2280, 800 }, 0, DARKBLUE }, // "background"
-    {{ 0, 400, 1280, 500 }, 1, DARKGREEN }, // chao 1
-    {{ 1280, 450, 600, 400 }, 1, DARKGREEN }, // chao 2
-    {{ 1880, 400, 400, 500 }, 1, DARKGREEN }, // chao 3
-    {{ 250, 350, 100, 10 }, 1, DARKGREEN }, // retangulo alto 1
-    {{ 650, 350, 100, 10 }, 1, DARKGREEN } // retangulo alto 2
-};
+static GameMap gameMap; // Nova struct de mapa
 static Camera2D camera;
 
 void Gameplay_Init(void) {
-    player.position = (Vector2){ 200, 400 };
+    // 1. Carregar Mapa do JSON
+    // Caminho relativo ao executável
+    gameMap = MapLoader_Load("assets/maps/maptest.json");
+    
+    // 2. Configurar Player
+    // Posição inicial hardcoded (idealmente viria do JSON layer objects)
+    player.position = (Vector2){ 100, 100 }; 
     player.speed = 0;
     player.canJump = false;
     
+    // 3. Configurar Camera
     camera.target = player.position;
     camera.offset = (Vector2){ LARGURA_TELA/2.0f, ALTURA_TELA/2.0f };
     camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
+    camera.zoom = 1.5f; // Zoom maior pois tiles são pequenos (16x16)
 }
 
 EstadoJogo Gameplay_Update(void) {
@@ -32,15 +37,10 @@ EstadoJogo Gameplay_Update(void) {
 
     if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
 
-    // 1. Entidade processa Input
+    // Lógica
     Entities_ProcessPlayerInput(&player, dt);
-    
-    // 2. Sistema de Física resolve colisões e movimento
-    Physics_UpdatePlayer(&player, envItems, 5, dt);
-    
-    // 3. Atualiza Câmera
-    int envItemsLength = sizeof(envItems)/sizeof(envItems[0]);
-    Render_UpdateCamera(&camera, &player, envItems, envItemsLength, LARGURA_TELA, ALTURA_TELA);
+    Physics_UpdatePlayer(&player, &gameMap, dt); // Passamos o Mapa, não EnvItems
+    Render_UpdateCamera(&camera, &player, LARGURA_TELA, ALTURA_TELA);
 
     return TELA_GAMEPLAY;
 }
@@ -48,10 +48,17 @@ EstadoJogo Gameplay_Update(void) {
 void Gameplay_Draw(void) {
     ClearBackground(LIGHTGRAY);
     
+    ClearBackground(SKYBLUE); // Cor de fundo básica
+    
     BeginMode2D(camera);
-        Render_Map(envItems, 5);
-        Render_Player(&player);
+        Render_Map(&gameMap);    // Renderiza Tiles
+        Render_Player(&player);  // Renderiza Player
     EndMode2D();
     
+    DrawText("Carregado via JSON + cJSON", 20, 20, 20, WHITE);
     DrawText("Controles: Setas + Espaco | ESC para fechar", 20, 20, 20, BLACK);
+}
+
+void Gameplay_Deinit(void) {
+    MapLoader_Unload(&gameMap);
 }

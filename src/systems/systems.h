@@ -4,11 +4,12 @@
 #include "../data/entity_types.h"
 #include "../data/map_data.h"
 
+
 // Physics
-void Physics_UpdatePlayer(Player *player, EnvItem *envItems, int envLength, float dt);
+void Physics_UpdatePlayer(Player *player, GameMap* map, float dt);
 
 // Render & Animation
-void Render_Map(EnvItem *envItems, int envLength);
+void Render_Map(GameMap* map);
 void Render_Player(Player *player);
 void Render_UpdateCamera(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, int width, int height);
 

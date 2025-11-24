@@ -24,6 +24,7 @@ void Menu_Deinit(void);
 void Gameplay_Init(void);
 EstadoJogo Gameplay_Update(void);
 void Gameplay_Draw(void);
+void Gameplay_Deinit(void);
 
 // funcoes credits
 void Creditos_Init(void);
