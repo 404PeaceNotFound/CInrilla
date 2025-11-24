@@ -3,7 +3,7 @@
 #include <raylib.h>
 
 static Sound somInterface;
-static Sound musicaMenu;
+static Music musicaMenu;
 
 void Core_Init(void) {
     InitWindow(LARGURA_TELA, ALTURA_TELA, TITULO_JOGO);
@@ -15,14 +15,15 @@ void Core_Init(void) {
         somInterface = LoadSound("assets/sounds/UI_SOUND.mp3");
     
     if (FileExists("assets/sounds/Sound_Menu.mp3")) {
-        musicaMenu = LoadSound("assets/sounds/Sound_Menu.mp3");
-        SetSoundVolume(musicaMenu, 0.25f);
+        musicaMenu = LoadMusicStream("assets/sounds/Sound_Menu.mp3");
+        SetMusicVolume(musicaMenu, 0.25f);
+        musicaMenu.looping = true;
     }
 }
 
 void Core_Close(void) {
     if (IsSoundPlaying(somInterface)) UnloadSound(somInterface);
-    if (IsSoundPlaying(musicaMenu)) UnloadSound(musicaMenu);
+    if (IsMusicValid(musicaMenu)) UnloadMusicStream(musicaMenu);
     CloseAudioDevice();
     CloseWindow();
 }
@@ -36,9 +37,16 @@ double Core_GetTime(void) {
 }
 
 void Core_PlayMusic(void) {
-    if (IsSoundValid(musicaMenu)) PlaySound(musicaMenu);
+    if (IsMusicValid(musicaMenu))if(!IsMusicStreamPlaying(musicaMenu)) PlayMusicStream(musicaMenu);
 }
 
 void Core_PlaySoundUI(void) {
     if (IsSoundValid(somInterface)) PlaySound(somInterface);
+}
+
+void Core_UpdateMusic(void) {
+    // Verifica se a música existe e está pronta antes de atualizar
+    if (IsMusicValid(musicaMenu)) {
+        UpdateMusicStream(musicaMenu);
+    }
 }

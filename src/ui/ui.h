@@ -12,5 +12,5 @@ typedef struct {
 
 void UI_DesenharBotao(BotaoUI* botao);
 void UI_DesenharTextoCentralizado(const char* texto, int y, int tamanho, Color cor);
-
+void UI_DesenharHealthBar(int HealthAtual,int HealthMax,int Largura_Tela);
 #endif

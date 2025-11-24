@@ -4,6 +4,7 @@
 #include "../systems/systems.h"
 #include "../entities/entities.h"
 #include "../config/config.h"
+#include "../ui/ui.h"
 
 static Player player;
 static EnvItem envItems[] = {
@@ -19,7 +20,7 @@ void Gameplay_Init(void) {
     player.position = (Vector2){ 600, 300 };
     player.speed = 0;
     player.canJump = false;
-    
+    player.health = 100;
     camera.target = player.position;
     camera.offset = (Vector2){ LARGURA_TELA/2.0f, ALTURA_TELA/2.0f };
     camera.rotation = 0.0f;
@@ -29,7 +30,7 @@ void Gameplay_Init(void) {
 EstadoJogo Gameplay_Update(void) {
     float dt = GetFrameTime();
 
-    if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
+    if (IsKeyPressed(KEY_BACKSPACE)) return TELA_PAUSA;
 
     // 1. Entidade processa Input
     Entities_ProcessPlayerInput(&player, dt);
@@ -45,11 +46,13 @@ EstadoJogo Gameplay_Update(void) {
 
 void Gameplay_Draw(void) {
     ClearBackground(LIGHTGRAY);
-    
+
     BeginMode2D(camera);
         Render_Map(envItems, 5);
         Render_Player(&player);
     EndMode2D();
     
-    DrawText("Controles: Setas + Espaco | ESC para voltar", 20, 20, 20, BLACK);
+    UI_DesenharHealthBar(player.health,100,LARGURA_TELA);
+
+    DrawText("Controles: Setas + Espaco | BACKSPACE para pausa", 20, 20, 20, BLACK);
 }

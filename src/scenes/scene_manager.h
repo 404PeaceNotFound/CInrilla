@@ -5,7 +5,8 @@ typedef enum {
     TELA_MENU,
     TELA_GAMEPLAY,
     TELA_CREDITOS,
-    TELA_SAIR
+    TELA_SAIR,
+    TELA_PAUSA
 } EstadoJogo;
 
 // funcoes scene_manager
@@ -19,6 +20,12 @@ void Menu_Init(void);
 EstadoJogo Menu_Update(void);
 void Menu_Draw(void);
 void Menu_Deinit(void);
+
+//funcoes pausa
+void Pausa_Init(void);
+EstadoJogo Pausa_Update(void);
+void Pausa_Draw(void);
+void Pausa_Deinit(void);
 
 // funcoes gameplay
 void Gameplay_Init(void);

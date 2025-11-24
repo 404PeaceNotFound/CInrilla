@@ -18,3 +18,25 @@ void UI_DesenharTextoCentralizado(const char* texto, int y, int tamanho, Color c
     int largura = MeasureText(texto, tamanho);
     DrawText(texto, (GetScreenWidth() - largura) / 2, y, tamanho, cor);
 }
+
+void UI_DesenharHealthBar(int HealthAtual, int HealthMax ,int Largura_Tela){
+    
+    const int BarTamanhoMax = 200;
+    const int BarAltura = 20;
+
+    float BarTamanho =((float)HealthAtual / HealthMax) * BarTamanhoMax;
+    int x = Largura_Tela - BarTamanhoMax - 20;
+    int y = 20;
+
+    DrawRectangle(x,y,BarTamanhoMax,BarAltura,GRAY);
+
+    Color barCor = GREEN;
+    if (HealthAtual< HealthMax/4) barCor = RED;
+    else if (HealthAtual < HealthAtual/2) barCor = ORANGE;
+    else barCor = GREEN;
+
+    DrawRectangle(x, y,(int)BarTamanhoMax,BarAltura, barCor);
+    DrawRectangleLines(x, y, BarTamanhoMax, BarAltura, GRAY);
+    DrawText(TextFormat("%d / %d", HealthAtual, HealthMax), x, y + 25,20, BLACK);
+
+}

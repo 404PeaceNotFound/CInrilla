@@ -6,6 +6,7 @@ int main(void) {
     SM_Init();
 
     while (!Core_ShouldClose()) {
+        Core_UpdateMusic();
         SM_Update();
         SM_Draw();
     }
