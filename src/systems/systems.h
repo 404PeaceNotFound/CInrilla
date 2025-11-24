@@ -10,7 +10,7 @@ void Physics_UpdatePlayer(Player *player, EnvItem *envItems, int envLength, floa
 // Render & Animation
 void Render_Map(EnvItem *envItems, int envLength);
 void Render_Player(Player *player);
-void Render_UpdateCamera(Camera2D *camera, Player *player, int width, int height);
+void Render_UpdateCamera(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, int width, int height);
 
 // Animation System
 AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fps, int w, int h);

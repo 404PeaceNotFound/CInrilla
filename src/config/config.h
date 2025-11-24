@@ -8,8 +8,8 @@
 #define ALVO_FPS 60
 
 // Física
-#define GRAVIDADE 500.0f
-#define PLAYER_JUMP_SPD 300.0f
-#define PLAYER_HOR_SPD 300.0f
+#define GRAVIDADE 980.0f
+#define PLAYER_JUMP_SPD 350.0f
+#define PLAYER_HOR_SPD 200.0f
 
 #endif
