@@ -27,6 +27,7 @@ typedef struct {
     int alturaFrame;
     bool loop;
     bool ismenu;
+    bool final;
 } AnimacaoSpritesheet;
 
 typedef struct{

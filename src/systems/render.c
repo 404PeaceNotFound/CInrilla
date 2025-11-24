@@ -97,8 +97,14 @@ void Render_UpdateAnim(AnimacaoSpritesheet *anim, float dt) { //motor dos sprite
         if (!anim->inverteAnimacao) {   
             anim->indiceFrameX++;
             if (anim->indiceFrameX >= anim->framesX) {
-                anim->indiceFrameX = 0;
-                if(anim->ismenu) anim->indiceFrameY++;
+                if(anim->loop){
+                    anim->indiceFrameX = 0;
+                    if(anim->ismenu) anim->indiceFrameY++;
+                }
+                else{
+                    anim->indiceFrameX = anim->indiceFrameX - 1;
+                    anim->final = true;
+                }
             }
         } else {
             anim->indiceFrameX--;

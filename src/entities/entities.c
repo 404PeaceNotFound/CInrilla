@@ -42,6 +42,11 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
 
     if (IsKeyDown(KEY_Z) && player->canJump) {
         player->isatk = true;
+        player->state = PlayerAtk;
+        player->anim[PlayerAtk].indiceFrameX = 0;
+        player->anim[PlayerAtk].final = false;
+        player->anim[PlayerAtk].temporizador = player->anim[PlayerAtk].tempoPorFrame;
+
         PlaySound(player->soundPlayer.Atk);
     }
     

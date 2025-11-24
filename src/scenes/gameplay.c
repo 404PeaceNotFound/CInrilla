@@ -31,7 +31,6 @@ void Gameplay_Init(void) {
 EstadoJogo Gameplay_Update(void) { //Aqui rola a zuera de atualizar com o tempo
     float dt = GetFrameTime();
 
-    if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
 
     // 1. Entidade processa Input
     Entities_ProcessPlayerInput(&player, dt);
@@ -44,6 +43,13 @@ EstadoJogo Gameplay_Update(void) { //Aqui rola a zuera de atualizar com o tempo
 
     // 3. Atualiza Sprite
     Render_UpdateAnim(&player.anim[player.state], dt);
+
+    if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
+
+    if(player.anim[player.state].final){
+        player.state = PlayerIdle;
+    }
+
 
     return TELA_GAMEPLAY;
 }
