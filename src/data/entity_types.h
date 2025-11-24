@@ -44,6 +44,7 @@ typedef struct {
     Vector2 position;
     float speed; // Velocidade vertical (Y)
     bool canJump;
+    bool canMove;
     bool isatk;
     int PlayerDirection;
     AnimacaoSpritesheet anim[PlayerStateCount];

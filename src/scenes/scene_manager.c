@@ -1,6 +1,7 @@
 #include "scene_manager.h"
 #include <raylib.h>
 
+
 static EstadoJogo estadoAtual = TELA_MENU;
 
 void SM_Init(void) {
@@ -10,6 +11,7 @@ void SM_Init(void) {
 }
 
 void SM_Update(void) {
+
     EstadoJogo proximoEstado = estadoAtual;
 
     switch (estadoAtual) {
@@ -25,7 +27,7 @@ void SM_Update(void) {
     estadoAtual = proximoEstado;
 }
 
-void SM_Draw(void) {
+void SM_Draw(void){
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
