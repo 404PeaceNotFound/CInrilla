@@ -20,7 +20,7 @@ void initPlayer(Player *player){
     player->isatk = false;
     player->PlayerDirection = 1;
     player->damage = 5;
-    player->health = 5;
+    player->health = 15;
 
     //Carregar Sons
     player->soundPlayer.Run = LoadSound("assets/sounds/Player/Run.mp3");

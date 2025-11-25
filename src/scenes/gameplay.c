@@ -67,6 +67,8 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
         } else {
             e->position.x -= 30; // Empurra para Esquerda
         }
+
+        e->active = 0; //Mata o inimigo (Temporario)
         
         // 2. APLICA KNOCKBACK VERTICAL (Pulo de dor)
         // ERRADO: e->speed = -150; (Isso quebra a caminhada)
