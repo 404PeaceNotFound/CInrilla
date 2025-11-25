@@ -169,7 +169,11 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
 
             // 3. Atualiza Sprite
             Render_UpdateAnim(&player.anim[player.state], dt);
-
+            
+            if (IsKeyPressed(KEY_BACKSPACE)) return TELA_PAUSA;
+            
+            if (player.health <= 0) return TELA_GAMEOVER;
+            
             if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
 
             if(player.anim[player.state].final){
@@ -204,7 +208,7 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
                     //DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
                 }
             EndMode2D();
-            UI_DesenharHealthBar(player.health,50,LARGURA_TELA);
+            UI_DesenharHealthBar(player.health,player.health,LARGURA_TELA);
             //DrawText(TextFormat("Vida: %d", player.health), 20, 50, 20, RED);
             DrawText("Controles: Setas + Espaco | ESC para voltar", 20, 20, 20, BLACK);
         }
