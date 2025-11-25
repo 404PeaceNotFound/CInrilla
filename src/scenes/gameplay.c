@@ -9,11 +9,12 @@
         // player 
         static Player player;
         static EnvItem envItems[] = {
-            {{ 0, 0, 1000, 400 }, 0, LIGHTGRAY },
-            {{ 0, 400, 1000, 200 }, 1, GRAY },
-            {{ 300, 250, 400, 10 }, 1, GRAY },
-            {{ 250, 320, 100, 10 }, 1, GRAY },
-            {{ 650, 320, 100, 10 }, 1, GRAY }
+            {{ 0, 0, 2280, 800 }, 0, DARKBLUE }, // "background"
+            {{ 0, 400, 1280, 500 }, 1, DARKGREEN }, // chao 1
+            {{ 1280, 450, 600, 400 }, 1, DARKGREEN }, // chao 2
+            {{ 1880, 400, 400, 500 }, 1, DARKGREEN }, // chao 3
+            {{ 250, 350, 100, 10 }, 1, DARKGREEN }, // retangulo alto 1
+            {{ 650, 350, 100, 10 }, 1, DARKGREEN } // retangulo alto 2
         };
         static Camera2D camera;
 
