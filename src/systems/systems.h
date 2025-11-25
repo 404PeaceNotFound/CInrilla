@@ -22,5 +22,4 @@ AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fp
 void Render_UpdateAnim(AnimacaoSpritesheet *anim, float dt);
 void Render_DrawAnim(AnimacaoSpritesheet anim, Vector2 pos);
 void Render_UnloadAnim(AnimacaoSpritesheet *anim);
-
 #endif

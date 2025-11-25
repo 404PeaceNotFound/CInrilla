@@ -65,4 +65,7 @@ Enemy Enemy_Create(Vector2 pos, float leftLimit, float rightLimit, float walkSpe
 // atualiza lógica
 void UpdateEnemy(Enemy *e, float dt);
 
+// desenha (só um retângulo)
+void DrawEnemy(Enemy *e);
+
 #endif
