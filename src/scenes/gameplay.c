@@ -117,7 +117,7 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
         void Gameplay_Init(void) {
             Render_LoadAssets();
             //player
-            player.position = (Vector2){ 600, 300 };
+            player.position = (Vector2){ 200, 400 };
             player.speed = 0;
             player.canJump = false;
             player.isatk = false;
@@ -128,13 +128,13 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
             camera.target = player.position;
             camera.offset = (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f};
             camera.rotation = 0.0f;
-            camera.zoom = 1.5f;
+            camera.zoom = 1.0f;
 
             // Geração de inimigos
             enemyCount = 0;
 
             // --- INIMIGO 1: Javali (Boar) ---
-            enemies[enemyCount] = Enemy_Create((Vector2){500, 400}, 200, 500, 60); 
+            enemies[enemyCount] = Enemy_Create((Vector2){600, 400}, 200, 500, 60); 
             // AQUI ESTÁ A MÁGICA QUE FALTAVA:
             Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR); 
             enemyCount++;
@@ -167,7 +167,8 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
             Physics_UpdatePlayer(&player, envItems, 5, dt);
             
             // 3. Atualiza Câmera
-            Render_UpdateCamera(&camera, &player, LARGURA_TELA, ALTURA_TELA);
+            int envItemsLength = sizeof(envItems)/sizeof(envItems[0]);
+            Render_UpdateCamera(&camera, &player, envItems, envItemsLength, LARGURA_TELA, ALTURA_TELA);
 
             // 3. Atualiza Sprite
             Render_UpdateAnim(&player.anim[player.state], dt);
