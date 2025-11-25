@@ -35,7 +35,7 @@ void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
     // ETAPA 1: VERIFICA O ATAQUE (Hitbox da Arma)
     // ---------------------------------------------------------
     // ATENÇÃO: Isso agora fica FORA do CheckCollisionRecs(playerBody...)
-    if(p->isatk){
+    if(p->isatk && !p->hasHit){
         float atkRange = 50.0f;
         float atkHeight = 40.0f;
         float attackX;
@@ -70,7 +70,7 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
         // CERTO: Use verticalSpeed (se sua struct Enemy tiver essa variável)
         // Se não tiver, verifique como você fez a gravidade do inimigo no Physics.
         // Baseado no seu código anterior, você usou 'verticalSpeed' na física.
-        e->verticalSpeed = -300.0f; 
+        e->verticalSpeed = -100.0f; 
         
         // 3. TRAVA O ATAQUE
         p->hasHit = true; 
@@ -87,12 +87,12 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
         bool isFalling = p->speed > 0;
         bool isAbove = (p->position.y - 10) < enemyRect.y + (enemyRect.height * 0.5f);
 
-        if (isFalling && isAbove) {
+        //if (isFalling && isAbove) {
             // MATOU O INIMIGO (Pulo Mario)
-            e->active = 0;      
-            p->speed = -400.0f; 
-        } 
-        else {
+            //e->active = 0;      
+            //p->speed = -400.0f; 
+        //} 
+        //else {
             // PLAYER TOMOU DANO
             p->health -= 1; // Tira vida
 
@@ -104,7 +104,7 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
             }
             
             p->speed = -200; // Pulo pequeno de dano
-        }
+       // }
     }
 }
         // init 
@@ -133,7 +133,12 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
             Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR); 
             enemyCount++;
 
-            // --- INIMIGO 2: Abelha (Bee) ---
+            // --- INIMIGO 2: Javali (Boar) ---
+            enemies[enemyCount] = Enemy_Create((Vector2){800, 400}, 700, 900, 60);
+            Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
+            enemyCount++;
+
+            // --- INIMIGO 3: Abelha (Bee) ---
             enemies[enemyCount] = Enemy_Create((Vector2){800, 200}, 200, 500, 60); 
             // Configura como Abelha
             Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
