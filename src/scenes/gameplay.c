@@ -203,7 +203,7 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
                     //DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
                 }
             EndMode2D();
-            UI_DesenharHealthBar(player.health,100,LARGURA_TELA);
+            UI_DesenharHealthBar(player.health,50,LARGURA_TELA);
             //DrawText(TextFormat("Vida: %d", player.health), 20, 50, 20, RED);
             DrawText("Controles: Setas + Espaco | ESC para voltar", 20, 20, 20, BLACK);
         }
