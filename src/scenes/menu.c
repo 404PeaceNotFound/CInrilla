@@ -30,7 +30,7 @@ EstadoJogo Menu_Update(void) {
 
 void Menu_Draw(void) {
     ClearBackground(RAYWHITE);
-    Render_DrawAnim(animMenu, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f});
+    Render_DrawAnim(animMenu, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f}, false);
 
 
     UI_DesenharTextoCentralizado(TITULO_JOGO, 100, 60, WHITE);

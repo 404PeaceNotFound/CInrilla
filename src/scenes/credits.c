@@ -25,7 +25,7 @@ EstadoJogo Creditos_Update(void) {
 
 void Creditos_Draw(void) {
     ClearBackground(BLACK);
-    Render_DrawAnim(animFundo, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f});
+    Render_DrawAnim(animFundo, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f}, false);
     
     UI_DesenharTextoCentralizado("CREDITOS", 50, 100, WHITE);
     UI_DesenharTextoCentralizado("Gabriel Vieira <g>", ALTURA_TELA/2.0f - 100, 50, WHITE);

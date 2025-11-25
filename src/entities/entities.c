@@ -9,6 +9,7 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
     // ----------------------------------------------------------------
     //IsKeyPressed para não resetar a animação todo frame
     if (IsKeyPressed(KEY_Z) && !player->isatk) {
+        player->hasHit = false;
         player->isatk = true;
         player->state = PlayerAtk;
         

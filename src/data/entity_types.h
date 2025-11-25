@@ -41,6 +41,7 @@ typedef struct{
 typedef struct {
     int health;
     int damage;
+    bool hasHit;
     Vector2 position;
     float speed; // Velocidade vertical (Y)
     bool canJump;
