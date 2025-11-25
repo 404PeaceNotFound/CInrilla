@@ -5,6 +5,7 @@
         #include "../entities/entities.h"
         #include "../config/config.h"
         #include "../systems/enemy_system.h"
+        #include "../ui/ui.h"
 
         // player 
         static Player player;
@@ -48,6 +49,8 @@ void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
             attackX = p->position.x - 20 - atkRange; // Na frente (Esquerda)
         }
 
+    if (IsKeyPressed(KEY_BACKSPACE)) return TELA_PAUSA;
+    if (player.health <= 0) return TELA_GAMEOVER;
         Rectangle atkRect = {
             attackX,
             p->position.y - 40,
@@ -200,7 +203,7 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
                     //DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
                 }
             EndMode2D();
-            
-            DrawText(TextFormat("Vida: %d", player.health), 20, 50, 20, RED);
+            UI_DesenharHealthBar(player.health,100,LARGURA_TELA);
+            //DrawText(TextFormat("Vida: %d", player.health), 20, 50, 20, RED);
             DrawText("Controles: Setas + Espaco | ESC para voltar", 20, 20, 20, BLACK);
         }

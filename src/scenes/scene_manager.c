@@ -1,5 +1,6 @@
 #include "scene_manager.h"
 #include <raylib.h>
+#include "../core/core_platform.h"
 
 
 static EstadoJogo estadoAtual = TELA_MENU;
@@ -8,6 +9,10 @@ void SM_Init(void) {
     Menu_Init();
     Gameplay_Init();
     Creditos_Init();
+    Pausa_Init();
+    Core_PlayMusic();
+    GameOver_Init();
+    Winner_Init();
 }
 
 void SM_Update(void) {
@@ -18,9 +23,16 @@ void SM_Update(void) {
         case TELA_MENU: proximoEstado = Menu_Update(); break;
         case TELA_GAMEPLAY: proximoEstado = Gameplay_Update(); break;
         case TELA_CREDITOS: proximoEstado = Creditos_Update(); break;
+        case TELA_PAUSA: proximoEstado = Pausa_Update(); break;
+        case TELA_GAMEOVER: proximoEstado = GameOver_Update(); break;
+        case TELA_WINNER: proximoEstado = Winner_Update(); break;
         default: break;
     }
-
+    if (proximoEstado != estadoAtual){
+        if (proximoEstado == TELA_PAUSA){
+            Pausa_CapturaFundo();
+        }
+    }
     if (proximoEstado == TELA_SAIR) {
         CloseWindow(); // Força saída
     }
@@ -35,6 +47,9 @@ void SM_Draw(void){
         case TELA_MENU: Menu_Draw(); break;
         case TELA_GAMEPLAY: Gameplay_Draw(); break;
         case TELA_CREDITOS: Creditos_Draw(); break;
+        case TELA_PAUSA: Pausa_Draw(); break;
+        case TELA_GAMEOVER: GameOver_Draw(); break;
+        case TELA_WINNER: Winner_Draw(); break;
         default: break;
     }
 
@@ -42,6 +57,7 @@ void SM_Draw(void){
 }
 
 void SM_Deinit(void) {
+    Pausa_Deinit();
     Creditos_Deinit();
     // Outros deinits se necessário
 }
