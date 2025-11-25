@@ -9,7 +9,7 @@ static BotaoUI btnVoltar;
 
 void Creditos_Init(void) {
     if (inicializado) return;
-    animFundo = Render_CreateAnim("assets/sprites/creditos/sheet_1.png", 6, 11, 30, LARGURA_TELA, ALTURA_TELA);
+    animFundo = Render_CreateAnim("assets/sprites/creditos/sheet_1.png", 6, 11, 30, LARGURA_TELA, ALTURA_TELA, true, true);
     btnVoltar = (BotaoUI){{LARGURA_TELA - 280, ALTURA_TELA - 80, 200, 50}, "VOLTAR", false};
     inicializado = true;
 }
@@ -25,7 +25,7 @@ EstadoJogo Creditos_Update(void) {
 
 void Creditos_Draw(void) {
     ClearBackground(BLACK);
-    Render_DrawAnim(animFundo, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f});
+    Render_DrawAnim(animFundo, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f}, false);
     
     UI_DesenharTextoCentralizado("CREDITOS", 50, 100, WHITE);
     UI_DesenharTextoCentralizado("Gabriel Vieira <g>", ALTURA_TELA/2.0f - 100, 50, WHITE);
