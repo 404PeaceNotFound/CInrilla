@@ -25,6 +25,7 @@ void Menu_Deinit(void);
 
 //funcoes pausa
 void Pausa_Init(void);
+void Pausa_CapturaFundo(void);
 EstadoJogo Pausa_Update(void);
 void Pausa_Draw(void);
 void Pausa_Deinit(void);

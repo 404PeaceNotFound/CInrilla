@@ -26,7 +26,11 @@ void SM_Update(void) {
         case TELA_WINNER: proximoEstado = Winner_Update(); break;
         default: break;
     }
-
+    if (proximoEstado != estadoAtual){
+        if (proximoEstado == TELA_PAUSA){
+            Pausa_CapturaFundo();
+        }
+    }
     if (proximoEstado == TELA_SAIR) {
         CloseWindow(); // Força saída
     }
@@ -51,6 +55,7 @@ void SM_Draw(void) {
 }
 
 void SM_Deinit(void) {
+    Pausa_Deinit();
     Creditos_Deinit();
     // Outros deinits se necessário
 }
