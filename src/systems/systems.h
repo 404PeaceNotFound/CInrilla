@@ -15,7 +15,7 @@ void Render_UnloadAssets(void);
 void Render_ConfigEnemy(Enemy *e, EnemyType type);
 void Render_Map(EnvItem *envItems, int envLength);
 void Render_Player(Player *player);
-void Render_UpdateCamera(Camera2D *camera, Player *player, int width, int height);
+void Render_UpdateCamera(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, int width, int height);
 void Render_Enemy(Enemy *e);
 
 // Animation System
