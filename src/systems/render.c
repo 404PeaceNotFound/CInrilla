@@ -1,6 +1,7 @@
+#include <raylib.h>
+#include <raymath.h> // Necessário para fminf e fmaxf (ou o Clamp da Raymath)
 #include "systems.h"
 #include "../config/config.h"
-#include <raylib.h>
 
 // Função interna auxiliar
 static void DrawLayer(MapLayer* layer, GameMap* map) {
@@ -57,27 +58,36 @@ void Render_Player(Player *player) {
     DrawCircleV(player->position, 5.0f, GOLD);
 }
 
-void Render_UpdateCamera(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, int width, int height) {
-    camera->target = player->position;
+void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int width, int height) {
+    // 1. Configuração base (segue o jogador)
+    // O offset permanece fixo (centralizado)
     camera->offset = (Vector2){ width/2.0f, height/2.0f };
-    float minX = 1000, minY = 1000, maxX = -1000, maxY = -1000;
+    camera->target = player->position;
 
-    for (int i = 0; i < envItemsLength; i++)
-    {
-        EnvItem *ei = envItems + i;
-        minX = fminf(ei->rect.x, minX);
-        maxX = fmaxf(ei->rect.x + ei->rect.width, maxX);
-        minY = fminf(ei->rect.y, minY);
-        maxY = fmaxf(ei->rect.y + ei->rect.height, maxY);
+    if (!map->loaded) return;
+    // 2. Determinar limites do mundo (em coordenadas de mundo)
+    float minX_world = 0.0f;
+    float minY_world = 0.0f;
+    float maxX_world = (float)map->width * map->tileWidth;
+    float maxY_world = (float)map->height * map->tileHeight;
+    // 3. Determinar os limites MÍNIMO e MÁXIMO que o camera->target pode assumir.
+    float targetMinX = minX_world + width / 2.0f / camera->zoom; // Target Mínimo: O ponto mais à esquerda/topo que o Target pode ir antes que a borda do mapa
+    float targetMinY = minY_world + height / 2.0f / camera->zoom;
+    float targetMaxX = maxX_world - width / 2.0f / camera->zoom; // Target Máximo: O ponto mais à direita/baixo que o Target pode ir antes que a borda do mapa
+    float targetMaxY = maxY_world - height / 2.0f / camera->zoom;
+    // 4. Clamping (Restrição do Alvo)
+    // Garante que o target mínimo não ultrapasse o máximo (caso o mapa seja menor que a tela na dimensão)
+    if (targetMinX > targetMaxX) {
+        targetMinX = targetMaxX = (minX_world + maxX_world) / 2.0f; // Se o mapa for menor que a tela, centraliza o target no mapa
     }
-
-    Vector2 max = GetWorldToScreen2D((Vector2){ maxX, maxY }, *camera);
-    Vector2 min = GetWorldToScreen2D((Vector2){ minX, minY }, *camera);
-
-    if (max.x < width) camera->offset.x = width - (max.x - width/2);
-    if (max.y < height) camera->offset.y = height - (max.y - height/2);
-    if (min.x > 0) camera->offset.x = width/2 - min.x;
-    if (min.y > 0) camera->offset.y = height/2 - min.y;
+    if (targetMinY > targetMaxY) {
+        targetMinY = targetMaxY = (minY_world + maxY_world) / 2.0f; // Se o mapa for menor que a tela, centraliza o target no mapa
+    }
+    // Aplica o Clamping final ao camera->target
+    camera->target.x = fmaxf(camera->target.x, targetMinX);
+    camera->target.x = fminf(camera->target.x, targetMaxX);
+    camera->target.y = fmaxf(camera->target.y, targetMinY);
+    camera->target.y = fminf(camera->target.y, targetMaxY);
 }
 
 // --- Animation System Logic (Ex-spritesheet_animacao) ---

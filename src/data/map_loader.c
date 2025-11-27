@@ -1,8 +1,8 @@
-#include "map_loader.h"
-#include "../core/cJSON.h" // Certifique-se que este arquivo existe
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "map_loader.h"
+#include "../core/cJSON.h"
 
 // Função auxiliar para ler arquivo texto inteiro para memória
 static char* LoadFileText_Custom(const char* fileName) {
@@ -60,7 +60,6 @@ GameMap MapLoader_Load(const char* jsonPath) {
     cJSON* tilesets = cJSON_GetObjectItem(root, "tilesets");
     if (cJSON_IsArray(tilesets)) {
         cJSON* ts = cJSON_GetArrayItem(tilesets, 0); // Pega o primeiro
-        
         map.firstGid = cJSON_GetObjectItem(ts, "firstgid")->valueint;
         map.columns = cJSON_GetObjectItem(ts, "columns")->valueint;
         
@@ -70,8 +69,7 @@ GameMap MapLoader_Load(const char* jsonPath) {
             const char* cleanName = GetFileNameFromPath(imgPath->valuestring);
             char fullPath[128];
             // Força o carregamento de assets/sprites/
-            snprintf(fullPath, sizeof(fullPath), "assets/sprites/%s", cleanName);
-            
+            snprintf(fullPath, sizeof(fullPath), "assets/images_map/assets/%s", cleanName);
             map.texture = LoadTexture(fullPath);
             if (map.texture.id == 0) {
                  printf("ERRO [MapLoader]: Textura nao encontrada em %s\n", fullPath);
@@ -105,6 +103,8 @@ GameMap MapLoader_Load(const char* jsonPath) {
             cJSON* dataArray = cJSON_GetObjectItem(layer, "data");
             int size = cJSON_GetArraySize(dataArray);
             
+            // Aloca e Limpa
+            if (targetLayer->data) free(targetLayer->data);
             targetLayer->data = (int*)malloc(size * sizeof(int));
             
             int i = 0;
@@ -124,7 +124,6 @@ GameMap MapLoader_Load(const char* jsonPath) {
 
 void MapLoader_Unload(GameMap* map) {
     if (!map->loaded) return;
-
     UnloadTexture(map->texture);
     if (map->layerGround.data) free(map->layerGround.data);
     if (map->layerDecor.data) free(map->layerDecor.data);

@@ -7,11 +7,13 @@
 bool CheckMapCollision(GameMap* map, Rectangle rect) {
     if (!map->loaded || !map->layerGround.data) return false;
 
+    float margin = 0.1f;
+
     // Converte bordas do player para coordenadas de Tile
-    int leftTile = (int)(rect.x / map->tileWidth);
-    int rightTile = (int)((rect.x + rect.width) / map->tileWidth);
-    int topTile = (int)(rect.y / map->tileHeight);
-    int bottomTile = (int)((rect.y + rect.height) / map->tileHeight);
+    int leftTile = (int)((rect.x + margin) / map->tileWidth);
+    int rightTile = (int)((rect.x + rect.width - margin) / map->tileWidth);
+    int topTile = (int)((rect.y + margin) / map->tileHeight);
+    int bottomTile = (int)((rect.y + rect.height - margin) / map->tileHeight);
 
     // Limites do mapa
     if (leftTile < 0) leftTile = 0;
@@ -78,12 +80,13 @@ void Physics_UpdatePlayer(Player *player, GameMap* map, float dt) {
     if (CheckMapCollision(map, rectY)) {
         // Colisão detectada
         if (player->speed > 0) { // Caindo
+            int tileY = (int)((player->position.y) / map->tileHeight);
+            int footTileY = (int)((rectY.y + rectY.height) / map->tileHeight);
              // Snap grid
-             player->position.y = ResolveMapCollisionY(map, rectY, player->speed);
+             player->position.y = (float)((footTileY) * map->tileHeight);
              player->speed = 0;
              player->canJump = true;
         } else if (player->speed < 0) { // Pulando e bateu cabeça
-             player->position.y = ResolveMapCollisionY(map, rectY, player->speed);
              player->speed = 0;
         }
     } else {

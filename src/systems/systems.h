@@ -11,7 +11,7 @@ void Physics_UpdatePlayer(Player *player, GameMap* map, float dt);
 // Render & Animation
 void Render_Map(GameMap* map);
 void Render_Player(Player *player);
-void Render_UpdateCamera(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, int width, int height);
+void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int width, int height);
 
 // Animation System
 AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fps, int w, int h);

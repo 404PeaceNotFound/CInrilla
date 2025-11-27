@@ -15,7 +15,6 @@ typedef struct {
 
 // Estrutura principal do Mapa
 typedef struct {
-    // Metadados
     int width;          // Largura total em tiles
     int height;         // Altura total em tiles
     int tileWidth;      // Ex: 16px

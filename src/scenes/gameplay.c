@@ -1,14 +1,9 @@
 #include "scene_manager.h"
-#include "../data/entity_types.h"
-#include "../data/map_data.h"
-#include "../systems/systems.h"
-#include "../entities/entities.h"
 #include "../config/config.h"
-
+#include "../data/map_data.h"
 #include "../data/map_loader.h"
 #include "../systems/systems.h"
 #include "../entities/entities.h"
-#include "../config/config.h"
 
 static Player player;
 static GameMap gameMap; // Nova struct de mapa
@@ -21,7 +16,7 @@ void Gameplay_Init(void) {
     
     // 2. Configurar Player
     // Posição inicial hardcoded (idealmente viria do JSON layer objects)
-    player.position = (Vector2){ 100, 100 }; 
+    player.position = (Vector2){ 7, 12 }; 
     player.speed = 0;
     player.canJump = false;
     
@@ -29,7 +24,7 @@ void Gameplay_Init(void) {
     camera.target = player.position;
     camera.offset = (Vector2){ LARGURA_TELA/2.0f, ALTURA_TELA/2.0f };
     camera.rotation = 0.0f;
-    camera.zoom = 1.5f; // Zoom maior pois tiles são pequenos (16x16)
+    camera.zoom = 2.2f; // Zoom maior pois tiles são pequenos (16x16)
 }
 
 EstadoJogo Gameplay_Update(void) {
@@ -40,7 +35,7 @@ EstadoJogo Gameplay_Update(void) {
     // Lógica
     Entities_ProcessPlayerInput(&player, dt);
     Physics_UpdatePlayer(&player, &gameMap, dt); // Passamos o Mapa, não EnvItems
-    Render_UpdateCamera(&camera, &player, LARGURA_TELA, ALTURA_TELA);
+    Render_UpdateCamera(&camera, &player, &gameMap, LARGURA_TELA, ALTURA_TELA);
 
     return TELA_GAMEPLAY;
 }
@@ -55,7 +50,6 @@ void Gameplay_Draw(void) {
         Render_Player(&player);  // Renderiza Player
     EndMode2D();
     
-    DrawText("Carregado via JSON + cJSON", 20, 20, 20, WHITE);
     DrawText("Controles: Setas + Espaco | ESC para fechar", 20, 20, 20, BLACK);
 }
 
