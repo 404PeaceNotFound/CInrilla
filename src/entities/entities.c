@@ -1,97 +1,79 @@
-#include "entities.h"
-#include "../config/config.h"
+#include "entities.h" // Se tiver um header próprio, ou incluir systems.h
+#include "../data/entity_types.h"
 #include <raylib.h>
 
+// Input do Player
 void Entities_ProcessPlayerInput(Player *player, float dt) {
-
-    // ----------------------------------------------------------------
-    // 1. INPUT DE ATAQUE (Prioridade Máxima)
-    // ----------------------------------------------------------------
-    //IsKeyPressed para não resetar a animação todo frame
-    if (IsKeyPressed(KEY_Z) && !player->isatk) {
-        player->hasHit = false;
-        player->isatk = true;
-        player->state = PlayerAtk;
-        
-        // Reset manual da animação para garantir que comece do frame 0
-        player->anim[PlayerAtk].indiceFrameX = 0;
-        player->anim[PlayerAtk].indiceFrameY = 0;
-        player->anim[PlayerAtk].temporizador = player->anim[PlayerAtk].tempoPorFrame;
-        player->anim[PlayerAtk].final = false;
-
-        PlaySound(player->soundPlayer.Atk);
+    // Reset estado para Idle se não estiver fazendo nada
+    if (!player->isatk && player->canJump) {
+        player->state = PlayerIdle;
     }
 
-    // Se o jogador estiver no meio de um ataque, IGNORA movimentação (opcional)
-    // Se quiser que ele ande atacando, remova este bloco 'if'.
-    // Mas geralmente, travar o movimento dá mais peso ao golpe.
-    if (player->isatk) {
+    // Movimento Lateral
+    if (IsKeyDown(KEY_RIGHT)) {
+        player->position.x += 300.0f * dt; // PLAYER_HOR_SPD hardcoded ou via config.h
+        player->PlayerDirection = 1;
+        if (!player->isatk && player->canJump) player->state = PlayerRun;
+    }
+    if (IsKeyDown(KEY_LEFT)) {
+        player->position.x -= 300.0f * dt;
+        player->PlayerDirection = -1;
+        if (!player->isatk && player->canJump) player->state = PlayerRun;
+    }
+
+    // Pulo
+    if (IsKeyPressed(KEY_SPACE) && player->canJump) {
+        player->speed = -500.0f; // PLAYER_JUMP_SPD
+        player->canJump = false;
+        // Tocar som de pulo se existir
+        if(IsSoundReady(player->soundPlayer.Jump)) PlaySound(player->soundPlayer.Jump);
+    }
+
+    // Estado de Pulo
+    if (!player->canJump) {
+        player->state = PlayerJump;
+    }
+
+    // Ataque
+    if (IsKeyPressed(KEY_Z) && !player->isatk) {
+        player->isatk = true;
+        player->hasHit = false;
         player->state = PlayerAtk;
-        // Se a animação acabou (sinalizada pelo render.c), libera o player
+        // Reset da animação de ataque
+        player->anim[PlayerAtk].indiceFrameX = 0;
+        player->anim[PlayerAtk].final = false;
+        
+        if(IsSoundReady(player->soundPlayer.Atk)) PlaySound(player->soundPlayer.Atk);
+    }
+
+    // Controle de fim de ataque
+    if (player->isatk) {
         if (player->anim[PlayerAtk].final) {
             player->isatk = false;
             player->state = PlayerIdle;
         }
-        // Retorna cedo para impedir que o código abaixo mude o state para Run
-        return; 
     }
+}
 
-    // ----------------------------------------------------------------
-    // 2. INPUT DE MOVIMENTO (Só roda se não estiver atacando)
-    // ----------------------------------------------------------------
+// Factory de Inimigos
+Enemy Enemy_Create(Vector2 pos, float minX, float maxX, float speed) {
+    Enemy e = {0};
+    e.position = pos;
+    e.minX = minX;
+    e.maxX = maxX;
+    e.speed = speed;
+    e.verticalSpeed = 0;
+    e.direction = 1;
+    e.active = true;
+    e.health = 3; // Valor padrão
+    e.state = ENEMY_STATE_WALK; // Começa andando
     
-    // Variável para saber se houve movimento neste frame
-    bool isMoving = false; 
-
-    if (IsKeyDown(KEY_LEFT)) {
-        player->position.x -= PLAYER_HOR_SPD * dt;
-        player->PlayerDirection = -1;
-        isMoving = true;
-    }
-    else if (IsKeyDown(KEY_RIGHT)){
-        player->position.x += PLAYER_HOR_SPD * dt;
-        player->PlayerDirection = 1;
-        isMoving = true;
-    } 
-
-    // ----------------------------------------------------------------
-    // 3. INPUT DE PULO
-    // ----------------------------------------------------------------
-    if (IsKeyPressed(KEY_SPACE) && player->canJump) {
-        player->speed = -PLAYER_JUMP_SPD;
-        player->canJump = false;
-        player->state = PlayerJump;
-        PlaySound(player->soundPlayer.Jump);
-    }
-
-    // ----------------------------------------------------------------
-    // 4. DEFINIÇÃO DE ESTADO (Atualização Visual)
-    // ----------------------------------------------------------------
-
-    if (!player->canJump) {
-        // Se não pode pular, é porque está no ar
-        player->state = PlayerJump;
-    } 
-    else if (isMoving) {
-        // No chão e movendo
-        player->state = PlayerRun;
-    } 
-    else {
-        // No chão e parado
-        player->state = PlayerIdle;
-    }
-
-    // ----------------------------------------------------------------
-    // 5. CONTROLE DE ÁUDIO (Passos)
-    // ----------------------------------------------------------------
-    if(player->state == PlayerRun){
-        if (!IsSoundPlaying(player->soundPlayer.Run)) {
-            PlaySound(player->soundPlayer.Run);
-        }
-    }
-    else{
-        if (IsSoundPlaying(player->soundPlayer.Run)) {
-            StopSound(player->soundPlayer.Run);
-        }
-    }
+    // Valores padrão de renderização (serão sobrescritos por Render_ConfigEnemy)
+    e.width = 32;
+    e.height = 32;
+    e.useTexture = false;
+    e.timer = 0;
+    e.frame = 0;
+    
+    return e;
 }
