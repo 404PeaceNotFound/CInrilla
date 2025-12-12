@@ -21,56 +21,82 @@ static int enemyCount = 0;
 // Lógica de Colisão Player vs Inimigo
 // MUDANÇA: Retorna bool (true se morreu/gameover) em vez de void
 // -----------------------------------------------------------------------------
-bool CheckPlayerEnemyCollision(Player *p, Enemy *e) {
-    if (!e->active) return false;
+void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
+    if (!e->active) return;
 
-    // Hitboxes
+    // 1. Áreas de Colisão
     Rectangle playerBody = { p->position.x - 20, p->position.y - 40, 40, 40 }; 
     Rectangle enemyRect = { e->position.x, e->position.y - e->height, e->width, e->height };
 
-    // 1. ATAQUE DO PLAYER
-    if (p->isatk && !p->hasHit) {
+    // ---------------------------------------------------------
+    // ETAPA 1: VERIFICA O ATAQUE (Hitbox da Arma)
+    // ---------------------------------------------------------
+    // ATENÇÃO: Isso agora fica FORA do CheckCollisionRecs(playerBody...)
+    if(p->isatk && !p->hasHit){
         float atkRange = 50.0f;
         float atkHeight = 40.0f;
-        float attackX = (p->PlayerDirection == 1) ? p->position.x + 20 : p->position.x - 20 - atkRange;
+        float attackX;
 
-        Rectangle atkRect = { attackX, p->position.y - 40, atkRange, atkHeight };
+        // Define onde a espada "nasce"
+        if(p->PlayerDirection == 1){
+            attackX = p->position.x + 20; // Na frente (Direita)
+        }
+        else {
+            attackX = p->position.x - 20 - atkRange; // Na frente (Esquerda)
+        }
 
-        if (CheckCollisionRecs(atkRect, enemyRect)) {
-            // Knockback no Inimigo
-            if (p->position.x < e->position.x) e->position.x += 30;
-            else e->position.x -= 30;
+        Rectangle atkRect = {
+            attackX,
+            p->position.y - 40,
+            atkRange,
+            atkHeight,
+        };
+
+    if (CheckCollisionRecs(atkRect, enemyRect)) {
             
-            // Mata inimigo (simples)
-            e->active = 0; 
-            e->verticalSpeed = -100.0f; 
+            e->health -= p->damage; // Aplica o Dano real
             
+            // Garante que o dano só seja aplicado uma vez por ataque
             p->hasHit = true; 
-            return false; 
+            
+            // Aplica o Knockback Horizontal (Empurrão)
+            if (e->health > 0) {
+                // Determine a direção do empurrão
+                float knockbackAmount = 40.0f; 
+                e->position.x += (p->position.x < e->position.x) ? knockbackAmount : -knockbackAmount; 
+                
+                // Aplica Knockback Vertical (Pulo) se necessário
+                e->verticalSpeed = -100.0f; // Exemplo de pulo de dano
+            } else {
+                 e->active = 0; // Temporário: Garante que o inimigo suma após a morte
+            }
+            
+            return; // O inimigo foi atingido, não verifica mais colisões neste frame.
         }
     }
 
-    // 2. CORPO A CORPO (Dano no Player)
+    // ---------------------------------------------------------
+    // ETAPA 2: VERIFICA COLISÃO DE CORPO (Dano no Player)
+    // ---------------------------------------------------------
     if (CheckCollisionRecs(playerBody, enemyRect)) {
-        p->health -= 1; // Dano
-        p->speed = -200; // Pulo de dano
-        
+            if (p->invulnerabilityTimer <= 0) 
+            { 
+        // PLAYER TOMOU DANO
+                p->health -= e->damage; // Tira vida
+                p->invulnerabilityTimer = 2.0f; // Tempo de invulnerabilidade
+                p->canJump = false; // Força o estado aéreo para knockback
 
-        // Knockback no Player
-        //if (p->position.x < e->position.x) p->position.x -= 50;
-        //else p->position.x += 50;
-        float knockbackDist = 30.0f; // Reduzi de 50 para 30 para ser mais seguro
-        float dir = (p->position.x < e->position.x) ? -1.0f : 1.0f; // -1 esq, 1 dir
-
-        p->position.x += (knockbackDist * dir);
-        
-        
-        
-        if (p->health <= 0) return true; // Morreu -> GameOver
+                // Empurrão no Player (Knockback)
+                if (p->position.x < e->position.x) {
+                    p->position.x -= 50; // Player vai para Esquerda
+                } else {
+                    p->position.x += 50; // Player vai para Direita
+                }
+                
+                p->speed = -200; // Pulo pequeno de dano (Knockback vertical)
+            }
+        }   
     }
-    
-    return false;
-}
 
 // -----------------------------------------------------------------------------
 // Inicialização
@@ -124,24 +150,71 @@ void Gameplay_Init(void) {
 // -----------------------------------------------------------------------------
 EstadoJogo Gameplay_Update(void) {
     float dt = GetFrameTime();
+    static bool resetGame = true;
 
-    if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
+    if (resetGame) {
+        // Reset Completo do Player 
+        player.health = 5;
+        player.state = PlayerIdle;
+        player.isatk = false;
+        player.speed = 0.0f;
+        player.canJump = true; // Importante para não começar caindo sem controle
+        player.anim[PlayerDead].final = false;    
+        
+        // CORREÇÃO: Usar a mesma posição lógica do Init
+        // Se o seu mapa tem tiles de 16x16 ou 32x32, calcule de acordo.
+        // Vou usar a mesma lógica que estava no seu Init:
+        if (gameMap.loaded) {
+            player.position = (Vector2){ 7 * gameMap.tileWidth, 12 * gameMap.tileHeight };
+        } else {
+            // Fallback caso o mapa não tenha carregado ainda (improvável, mas seguro)
+            player.position = (Vector2){ 100, 100 }; 
+        }
 
+        resetGame = false;
+    }
     // 1. Input Player
     Entities_ProcessPlayerInput(&player, dt);
     
     // 2. Física Player
     Physics_UpdatePlayer(&player, &gameMap, dt);
 
+    Render_UpdateAnim(&player.anim[player.state], dt);
+
+    //
+                if (IsKeyPressed(KEY_BACKSPACE)) return TELA_PAUSA;
+            
+            if (player.state == PlayerDead) {
+                if (player.anim[player.state].final) {
+                    resetGame = true;   
+                    return TELA_GAMEOVER;
+                    }
+
+                    return TELA_GAMEPLAY;
+                }
+            
+            if (IsKeyPressed(KEY_ESCAPE)){
+                resetGame = true;
+                return TELA_MENU;
+            }
+
+            if(player.anim[player.state].final){
+                player.state = PlayerIdle;              
+                }
+
+            if (player.invulnerabilityTimer > 0) {
+                player.invulnerabilityTimer -= dt;
+                }
+
     // 3. Física Inimigos e Colisões
     for(int i = 0; i < enemyCount; i++) {
         // Atualiza Movimento do Inimigo
         Physics_UpdateEnemy(&enemies[i], &gameMap, dt);
-        
+        Enemy_UpdateAnim(&enemies[i], dt);
         // Verifica Colisão com Player (Dano/Ataque)
-        if (CheckPlayerEnemyCollision(&player, &enemies[i])) {
-            return TELA_GAMEOVER; // Se retornar true, player morreu
-        }
+        CheckPlayerEnemyCollision(&player, &enemies[i]);
+
+        
     }
 
     // 4. Câmera

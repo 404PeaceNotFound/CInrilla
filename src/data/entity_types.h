@@ -12,7 +12,9 @@ typedef enum {
     PlayerIdle,
     PlayerRun,
     PlayerJump,
-    PlayerAtk
+    PlayerAtk,
+    PlayerDead,
+    PlayerStateCount
 } PlayerState;
 
 typedef enum {
@@ -68,15 +70,15 @@ typedef struct {
     // Lógica de Jogo
     int health;
     int damage;
-    int PlayerDirection; // 1 (Direita) ou -1 (Esquerda)
+    int PlayerDirection; 
     
     // Estado e Combate
     PlayerState state;
     bool isatk;
-    bool hasHit; // Impede que o mesmo ataque dê dano múltiplos frames seguidos
-    
-    // Componentes Visuais/Sonoros
-    AnimacaoSpritesheet anim[4]; // Array mapeado pelo enum PlayerState
+    bool hasHit;
+    float invulnerabilityTimer;
+
+    AnimacaoSpritesheet anim[PlayerStateCount]; // Array mapeado pelo enum PlayerState
     PlayerAudio soundPlayer;
 } Player;
 
@@ -87,6 +89,7 @@ typedef struct {
 typedef struct {
     // Física e Movimento
     Vector2 position;
+    int damage;
     float speed;
     float verticalSpeed;
     int direction;       // 1 ou -1

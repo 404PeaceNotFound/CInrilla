@@ -10,6 +10,8 @@
 void Physics_UpdatePlayer(Player *player, GameMap* map, float dt);
 // Atualiza física do inimigo baseada no mapa de tiles
 void Physics_UpdateEnemy(Enemy *enemy, GameMap* map, float dt);
+// entities.h
+void Enemy_UpdateAnim(Enemy *e, float dt);
 
 // --- Render & Animation ---
 void Render_LoadAssets(void);

@@ -64,6 +64,7 @@ void initPlayer(Player *player) {
     player->PlayerDirection = 1;
     player->damage = 5;
     player->health = 15;
+    player->invulnerabilityTimer = 0;
 
     // Carregar Sons
     player->soundPlayer.Run = LoadSound("assets/sounds/Player/Run.mp3");
@@ -75,6 +76,13 @@ void initPlayer(Player *player) {
     player->anim[PlayerRun] = Render_CreateAnim("assets/sprites/character/Run/Run-Sheet.png", 8, 1, 7, 80, 64, true, false);
     player->anim[PlayerJump] = Render_CreateAnim("assets/sprites/character/Jumlp-All/Jump-All-Sheet.png", 15, 1, 6, 64, 64, true, false);
     player->anim[PlayerAtk] = Render_CreateAnim("assets/sprites/character/Attack-01/Attack-01-Sheet.png", 8, 1, 8, 96, 64, false, false);
+    player->anim[PlayerDead] = Render_CreateAnim("assets/sprites/character/Dead/Dead-Sheet.png", //Atacar
+        8,   // framesX 
+        1,   // framesY
+        8,   // fps (0 para estático)
+        80,  // largura do frame
+        64,   // altura do frame
+        false, false);
 
     player->anim[player->state].indiceFrameX = 0;
     player->anim[player->state].indiceFrameY = 0; 
@@ -228,6 +236,31 @@ void Render_UpdateAnim(AnimacaoSpritesheet *anim, float dt) {
 
         if(anim->loop && anim->ismenu) {
             if (anim->indiceFrameY >= anim->framesY) anim->indiceFrameY = 0; // Proteção extra
+        }
+    }
+}
+
+// Em entities.c
+void Enemy_UpdateAnim(Enemy *e, float dt) {
+    if (!e->active) return;
+
+    e->timer -= dt;
+    if (e->timer <= 0) {
+        e->timer = e->frameTime;
+        e->frame++;
+        
+        // Define o limite de frames baseado no estado atual
+        int maxFrames = 0;
+        switch (e->state) {
+            case ENEMY_STATE_IDLE:   maxFrames = e->maxFramesIdle; break;
+            case ENEMY_STATE_WALK:   maxFrames = e->maxFramesWalk; break;
+            case ENEMY_STATE_RUN:    maxFrames = e->maxFramesRun; break;
+            case ENEMY_STATE_ATTACK: maxFrames = e->maxFramesAttack; break;
+            default: maxFrames = e->maxFramesIdle; break;
+        }
+
+        if (e->frame >= maxFrames) {
+            e->frame = 0; // Loop da animação
         }
     }
 }
