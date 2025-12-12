@@ -2,6 +2,7 @@
 #include "../systems/systems.h"
 #include "../ui/ui.h"
 #include "../config/config.h"
+#include "../core/core_platform.h"
 
 static AnimacaoSpritesheet animMenu;
 static bool menuinicializado = false;
@@ -10,7 +11,7 @@ static BotaoUI btnCreditos = {{LARGURA_TELA/2 - 100, 400, 200, 50}, "CRÉDITOS",
 
 void Menu_Init(void) {
     if (menuinicializado) return;
-    animMenu = Render_CreateAnim("assets/sprites/menu/menu_spritesheet.png", 11, 11, 30, LARGURA_TELA, ALTURA_TELA);
+    animMenu = Render_CreateAnim("assets/sprites/menu/menu_spritesheet.png", 11, 11, 30, LARGURA_TELA, ALTURA_TELA, true, true);
     menuinicializado = true;
 }
 
@@ -30,7 +31,7 @@ EstadoJogo Menu_Update(void) {
 
 void Menu_Draw(void) {
     ClearBackground(RAYWHITE);
-    Render_DrawAnim(animMenu, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f});
+    Render_DrawAnim(animMenu, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f}, false);
 
 
     UI_DesenharTextoCentralizado(TITULO_JOGO, 100, 60, WHITE);

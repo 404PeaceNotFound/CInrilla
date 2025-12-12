@@ -3,13 +3,14 @@
 #include <raymath.h>
 #include <math.h>
 
+// Função auxiliar interna (não precisa estar no .h se for usada só aqui)
 // Verifica se um retângulo colide com algum tile sólido na camada Ground
 bool CheckMapCollision(GameMap* map, Rectangle rect) {
     if (!map->loaded || !map->layerGround.data) return false;
 
     float margin = 0.1f;
 
-    // Converte bordas do player para coordenadas de Tile
+    // Converte bordas para coordenadas de Tile
     int leftTile = (int)((rect.x + margin) / map->tileWidth);
     int rightTile = (int)((rect.x + rect.width - margin) / map->tileWidth);
     int topTile = (int)((rect.y + margin) / map->tileHeight);
@@ -21,7 +22,7 @@ bool CheckMapCollision(GameMap* map, Rectangle rect) {
     if (topTile < 0) topTile = 0;
     if (bottomTile >= map->height) bottomTile = map->height - 1;
 
-    // Loop apenas nos tiles que o player está tocando
+    // Loop apenas nos tiles que o retangulo está tocando
     for (int y = topTile; y <= bottomTile; y++) {
         for (int x = leftTile; x <= rightTile; x++) {
             int index = y * map->width + x;
@@ -36,34 +37,11 @@ bool CheckMapCollision(GameMap* map, Rectangle rect) {
     return false;
 }
 
-// Resolve colisão eixo Y (simples)
-float ResolveMapCollisionY(GameMap* map, Rectangle rect, float speedY) {
-    if (!map->loaded) return rect.y;
-
-    // Tenta mover
-    if (CheckMapCollision(map, rect)) {
-        // Se estava descendo (caindo), colidiu com chão
-        if (speedY > 0) {
-            // Encaixa no tile acima (Floor)
-            int tileY = (int)((rect.y + rect.height) / map->tileHeight);
-            return (tileY * map->tileHeight) - rect.height;
-        }
-        // Se estava subindo (pulo), colidiu com teto
-        else if (speedY < 0) {
-            int tileY = (int)(rect.y / map->tileHeight);
-            return (float)((tileY + 1) * map->tileHeight);
-        }
-    }
-    return rect.y;
-}
-
 void Physics_UpdatePlayer(Player *player, GameMap* map, float dt) {
     // Salva posição anterior para resolução
     Vector2 oldPos = player->position;
 
     // --- Eixo X ---
-    // (A lógica de movimento X já foi processada no Input, aqui apenas validamos)
-    // Criamos retângulo futuro X
     Rectangle rectX = { player->position.x - 20, oldPos.y - 40, 40, 40 };
     
     if (CheckMapCollision(map, rectX)) {
@@ -76,20 +54,71 @@ void Physics_UpdatePlayer(Player *player, GameMap* map, float dt) {
 
     Rectangle rectY = { player->position.x - 20, player->position.y - 40, 40, 40 };
     
-    // Verifica colisão
+    // Verifica colisão Y
     if (CheckMapCollision(map, rectY)) {
-        // Colisão detectada
         if (player->speed > 0) { // Caindo
-            int tileY = (int)((player->position.y) / map->tileHeight);
+            // Snap grid (alinha os pés ao topo do tile)
             int footTileY = (int)((rectY.y + rectY.height) / map->tileHeight);
-             // Snap grid
-             player->position.y = (float)((footTileY) * map->tileHeight);
-             player->speed = 0;
-             player->canJump = true;
+            player->position.y = (float)((footTileY) * map->tileHeight);
+            
+            player->speed = 0;
+            player->canJump = true;
         } else if (player->speed < 0) { // Pulando e bateu cabeça
              player->speed = 0;
         }
     } else {
         player->canJump = false;
     }
+}
+
+// ATUALIZADO: Agora usa GameMap em vez de EnvItem
+void Physics_UpdateEnemy(Enemy *enemy, GameMap *map, float dt) {
+    if (!enemy->active) return;
+
+    // --- Física Vertical (Gravidade) ---
+    bool hitGround = false;
+    float nextY = enemy->position.y + enemy->verticalSpeed * dt;
+    
+    // Hitbox vertical do inimigo
+    Rectangle vertRect = { enemy->position.x, nextY - enemy->height, enemy->width, enemy->height };
+
+    if (CheckMapCollision(map, vertRect)) {
+        if (enemy->verticalSpeed >= 0) {
+            // Colidiu com chão
+            int footTileY = (int)(nextY / map->tileHeight);
+            enemy->position.y = (float)(footTileY * map->tileHeight);
+            enemy->verticalSpeed = 0.0f;
+            hitGround = true;
+        } else {
+            // Colidiu com teto
+            enemy->verticalSpeed = 0.0f;
+        }
+    } else {
+        enemy->position.y = nextY;
+    }
+
+    if (!hitGround) {
+        enemy->verticalSpeed += GRAVIDADE * dt;
+    }
+
+    // --- Movimento Horizontal IA (Patrulha Boid/Parede) ---
+    float moveX = enemy->direction * enemy->speed * dt;
+    Rectangle horizRect = { enemy->position.x + moveX, enemy->position.y - enemy->height + 5, enemy->width, enemy->height - 10 };
+
+    // Se bater na parede, inverte direção
+    if (CheckMapCollision(map, horizRect)) {
+        enemy->direction *= -1;
+    } else {
+        enemy->position.x += moveX;
+    }
+
+    // Opcional: Lógica para não cair em buracos (Raycast para baixo na frente)
+    // Se quiser que ele vire ao chegar na borda da plataforma:
+    /*
+    float lookAhead = (enemy->width / 2.0f + 5) * enemy->direction;
+    Rectangle floorCheck = { enemy->position.x + enemy->width/2.0f + lookAhead, enemy->position.y + 2, 5, 5 };
+    if (!CheckMapCollision(map, floorCheck) && hitGround) {
+        enemy->direction *= -1; // Vira se não tiver chão na frente
+    }
+    */
 }
