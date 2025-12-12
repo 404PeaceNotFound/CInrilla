@@ -6,7 +6,16 @@
 // Função auxiliar interna (não precisa estar no .h se for usada só aqui)
 // Verifica se um retângulo colide com algum tile sólido na camada Ground
 bool CheckMapCollision(GameMap* map, Rectangle rect) {
-    if (!map->loaded || !map->layerGround.data) return false;
+    if (!map->loaded) return false;
+    
+    // Verifica se achamos uma layer de chão válida
+    if (map->collisionLayerIndex < 0 || map->collisionLayerIndex >= map->layersCount) {
+        return false; // Sem colisão se não tem layer Ground
+    }
+
+    // Pega o ponteiro direto para a layer de colisão
+    MapLayer* groundLayer = &map->layers[map->collisionLayerIndex];
+    if (!groundLayer->data) return false;
 
     float margin = 0.1f;
 
@@ -26,12 +35,11 @@ bool CheckMapCollision(GameMap* map, Rectangle rect) {
     for (int y = topTile; y <= bottomTile; y++) {
         for (int x = leftTile; x <= rightTile; x++) {
             int index = y * map->width + x;
-            int tileID = map->layerGround.data[index];
+            
+            // AQUI MUDOU: Usa groundLayer
+            int tileID = groundLayer->data[index];
 
-            // Se tileID > 0, consideramos sólido na camada Ground
-            if (tileID > 0) {
-                return true;
-            }
+            if (tileID > 0) return true;
         }
     }
     return false;

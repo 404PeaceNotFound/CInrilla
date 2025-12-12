@@ -53,12 +53,18 @@ bool CheckPlayerEnemyCollision(Player *p, Enemy *e) {
     // 2. CORPO A CORPO (Dano no Player)
     if (CheckCollisionRecs(playerBody, enemyRect)) {
         p->health -= 1; // Dano
+        p->speed = -200; // Pulo de dano
+        
 
         // Knockback no Player
-        if (p->position.x < e->position.x) p->position.x -= 50;
-        else p->position.x += 50;
+        //if (p->position.x < e->position.x) p->position.x -= 50;
+        //else p->position.x += 50;
+        float knockbackDist = 30.0f; // Reduzi de 50 para 30 para ser mais seguro
+        float dir = (p->position.x < e->position.x) ? -1.0f : 1.0f; // -1 esq, 1 dir
+
+        p->position.x += (knockbackDist * dir);
         
-        p->speed = -200; // Pulo de dano
+        
         
         if (p->health <= 0) return true; // Morreu -> GameOver
     }
@@ -78,7 +84,10 @@ void Gameplay_Init(void) {
     // 2. Player
     // CORREÇÃO: Converter tile (7,12) para pixels ou usar valor fixo em pixels para evitar bugar na parede
     // Se tileWidth for 16: 7*16 = 112, 12*16 = 192.
-    player.position = (Vector2){ 112, 192 }; 
+    player.position = (Vector2){ 
+    7 * gameMap.tileWidth,  // 7 * 16 = 112
+    12 * gameMap.tileHeight // 12 * 16 = 192
+    };
     player.speed = 0;
     player.canJump = false;
     player.isatk = false;
@@ -161,7 +170,8 @@ void Gameplay_Draw(void) {
 
     // UI
     UI_DesenharHealthBar(player.health, 15, LARGURA_TELA); // Assumindo MaxHealth = 15 conforme initPlayer
-    DrawText("Controles: Setas + Espaco | Z para Atacar", 20, 50, 20, BLACK);
+    DrawText("Controles: Setas + Espaco | Z para Atacar", 20, 100, 20, BLACK);
+    DrawText(TextFormat("Pos: %.0f, %.0f", player.position.x, player.position.y), 10, 150, 20, RED);
 }
 
 void Gameplay_Deinit(void) {

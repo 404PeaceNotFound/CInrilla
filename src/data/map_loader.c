@@ -23,7 +23,7 @@ static char* LoadFileText_Custom(const char* fileName) {
     return buffer;
 }
 
-// Extrai apenas o nome do arquivo de um caminho completo (ex: ../img/Tiles.png -> Tiles.png)
+// Extrai apenas o nome do arquivo de um caminho completo
 static const char* GetFileNameFromPath(const char* path) {
     const char* filename = strrchr(path, '/'); // Linux/Mac
     if (!filename) filename = strrchr(path, '\\'); // Windows
@@ -33,100 +33,109 @@ static const char* GetFileNameFromPath(const char* path) {
 }
 
 GameMap MapLoader_Load(const char* jsonPath) {
+    printf("--- DEBUG: Carregando mapa (Sistema de Array): %s ---\n", jsonPath);
     GameMap map = {0};
     map.loaded = false;
+    map.collisionLayerIndex = -1; // Começa sem colisão definida
 
     char* jsonContent = LoadFileText_Custom(jsonPath);
-    if (!jsonContent) {
-        printf("ERRO [MapLoader]: Nao foi possivel abrir %s\n", jsonPath);
-        return map;
-    }
+    if (!jsonContent) return map;
 
     cJSON* root = cJSON_Parse(jsonContent);
-    free(jsonContent); // Libera texto bruto, agora está na struct cJSON
+    free(jsonContent);
+    if (!root) return map;
 
-    if (!root) {
-        printf("ERRO [MapLoader]: Falha no parsing JSON.\n");
-        return map;
-    }
-
-    // 1. Ler Dimensões Globais
+    // 1. Dimensões
     map.width = cJSON_GetObjectItem(root, "width")->valueint;
     map.height = cJSON_GetObjectItem(root, "height")->valueint;
     map.tileWidth = cJSON_GetObjectItem(root, "tilewidth")->valueint;
     map.tileHeight = cJSON_GetObjectItem(root, "tileheight")->valueint;
 
-    // 2. Ler Tileset (Assume-se o primeiro tileset para a textura principal)
+    // 2. Tileset
     cJSON* tilesets = cJSON_GetObjectItem(root, "tilesets");
     if (cJSON_IsArray(tilesets)) {
-        cJSON* ts = cJSON_GetArrayItem(tilesets, 0); // Pega o primeiro
-        map.firstGid = cJSON_GetObjectItem(ts, "firstgid")->valueint;
-        map.columns = cJSON_GetObjectItem(ts, "columns")->valueint;
-        
-        // Tratamento do caminho da imagem
-        cJSON* imgPath = cJSON_GetObjectItem(ts, "image");
-        if (imgPath) {
-            const char* cleanName = GetFileNameFromPath(imgPath->valuestring);
-            char fullPath[128];
-            // Força o carregamento de assets/sprites/
-            snprintf(fullPath, sizeof(fullPath), "assets/images_map/assets/%s", cleanName);
-            map.texture = LoadTexture(fullPath);
-            if (map.texture.id == 0) {
-                 printf("ERRO [MapLoader]: Textura nao encontrada em %s\n", fullPath);
+        cJSON* ts = cJSON_GetArrayItem(tilesets, 0);
+        if (ts) {
+            map.firstGid = cJSON_GetObjectItem(ts, "firstgid")->valueint;
+            map.columns = cJSON_GetObjectItem(ts, "columns")->valueint;
+            
+            cJSON* imgPath = cJSON_GetObjectItem(ts, "image");
+            if (imgPath) {
+                const char* cleanName = GetFileNameFromPath(imgPath->valuestring);
+                char fullPath[256];
+                snprintf(fullPath, sizeof(fullPath), "assets/images/tiles/%s", cleanName);
+                map.texture = LoadTexture(fullPath);
             }
         }
     }
 
-    // 3. Ler Camadas (Layers)
+    // 3. Camadas (Loop Genérico)
     cJSON* layers = cJSON_GetObjectItem(root, "layers");
     cJSON* layer = NULL;
 
     cJSON_ArrayForEach(layer, layers) {
-        const char* name = cJSON_GetObjectItem(layer, "name")->valuestring;
-        const char* type = cJSON_GetObjectItem(layer, "type")->valuestring;
+        // Proteção contra limite de layers
+        if (map.layersCount >= MAX_LAYERS) {
+            printf("AVISO: Maximo de layers atingido (%d)!\n", MAX_LAYERS);
+            break;
+        }
+
+        cJSON* typeItem = cJSON_GetObjectItem(layer, "type");
+        const char* type = typeItem ? typeItem->valuestring : "";
         
-        // Filtramos apenas tilelayers
+        // Só carrega se for tilelayer
         if (strcmp(type, "tilelayer") != 0) continue;
 
-        MapLayer* targetLayer = NULL;
+        // Pega a próxima vaga livre no array
+        MapLayer* targetLayer = &map.layers[map.layersCount];
+        cJSON* nameItem = cJSON_GetObjectItem(layer, "name");
+        const char* name = nameItem ? nameItem->valuestring : "Unamed";
 
-        // Mapeia nomes do JSON para nossas structs
-        if (strcmp(name, "Ground") == 0) targetLayer = &map.layerGround;
-        else if (strcmp(name, "Plants and Rocks") == 0) targetLayer = &map.layerDecor;
+        // Copia dados básicos
+        strncpy(targetLayer->name, name, 31);
+        targetLayer->width = cJSON_GetObjectItem(layer, "width")->valueint;
+        targetLayer->height = cJSON_GetObjectItem(layer, "height")->valueint;
+        targetLayer->isVisible = cJSON_GetObjectItem(layer, "visible")->valueint;
 
-        if (targetLayer) {
-            strncpy(targetLayer->name, name, 31);
-            targetLayer->width = cJSON_GetObjectItem(layer, "width")->valueint;
-            targetLayer->height = cJSON_GetObjectItem(layer, "height")->valueint;
-            targetLayer->isVisible = cJSON_GetObjectItem(layer, "visible")->valueint;
-            
-            cJSON* dataArray = cJSON_GetObjectItem(layer, "data");
+        // Carrega Tiles
+        cJSON* dataArray = cJSON_GetObjectItem(layer, "data");
+        if (dataArray) {
             int size = cJSON_GetArraySize(dataArray);
-            
-            // Aloca e Limpa
-            if (targetLayer->data) free(targetLayer->data);
             targetLayer->data = (int*)malloc(size * sizeof(int));
-            
             int i = 0;
             cJSON* val = NULL;
             cJSON_ArrayForEach(val, dataArray) {
                 targetLayer->data[i++] = val->valueint;
             }
         }
+
+        printf("Layer [%d] carregada: '%s'\n", map.layersCount, name);
+
+        // Verifica se essa é a layer de colisão
+        if (strstr(name, "Ground") != NULL || strstr(name, "Colisao") != NULL) {
+            map.collisionLayerIndex = map.layersCount;
+            printf("   -> Definida como COLISAO\n");
+        }
+
+        map.layersCount++; // Avança para a próxima
     }
 
     map.loaded = true;
     cJSON_Delete(root);
-    printf("SUCESSO [MapLoader]: Mapa carregado (%dx%d)\n", map.width, map.height);
-    
     return map;
 }
 
 void MapLoader_Unload(GameMap* map) {
     if (!map->loaded) return;
     UnloadTexture(map->texture);
-    if (map->layerGround.data) free(map->layerGround.data);
-    if (map->layerDecor.data) free(map->layerDecor.data);
-
+    
+    // Libera todas as layers do array
+    for (int i = 0; i < map->layersCount; i++) {
+        if (map->layers[i].data) {
+            free(map->layers[i].data);
+            map->layers[i].data = NULL;
+        }
+    }
+    
     map->loaded = false;
 }

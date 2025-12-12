@@ -39,8 +39,12 @@ static void DrawLayer(MapLayer* layer, GameMap* map) {
 
 void Render_Map(GameMap* map) {
     if (!map->loaded) return;
-    DrawLayer(&map->layerGround, map);
-    DrawLayer(&map->layerDecor, map);
+
+    for (int i = 0; i < map->layersCount; i++) {
+        if (map->layers[i].isVisible) {
+            DrawLayer(&map->layers[i], map);
+        }
+    }
 }
 
 // --- Player Rendering ---

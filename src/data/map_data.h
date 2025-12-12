@@ -4,32 +4,32 @@
 #include <raylib.h>
 #include <stdbool.h>
 
-// Estrutura de uma Camada (Layer)
+#define MAX_LAYERS 10 // Limite de camadas (aumente se precisar)
+
 typedef struct {
     char name[32];
-    int width;          // Em tiles
-    int height;         // Em tiles
-    int* data;          // Array linear de IDs (GIDs)
+    int width;
+    int height;
+    int* data;
     bool isVisible;
 } MapLayer;
 
-// Estrutura principal do Mapa
 typedef struct {
-    int width;          // Largura total em tiles
-    int height;         // Altura total em tiles
-    int tileWidth;      // Ex: 16px
-    int tileHeight;     // Ex: 16px
+    int width;
+    int height;
+    int tileWidth;
+    int tileHeight;
     
-    // Tileset Principal
-    Texture2D texture;  // A imagem (Tiles.png)
-    int firstGid;       // ID inicial (geralmente 1)
-    int columns;        // Quantas colunas tem a imagem do tileset (para cálculo de UV)
+    Texture2D texture;
+    int firstGid;
+    int columns;
     
-    // Camadas Específicas
-    MapLayer layerGround;    // Camada de colisão
-    MapLayer layerDecor;     // Camada visual (plantas, pedras)
+    // --- LISTA DE CAMADAS ---
+    MapLayer layers[MAX_LAYERS]; // Array para guardar todas as layers
+    int layersCount;             // Quantas layers foram carregadas
     
-    // Flag de controle
+    int collisionLayerIndex;     // Índice da layer que serve de chão (-1 se não achar)
+    
     bool loaded;
 } GameMap;
 
