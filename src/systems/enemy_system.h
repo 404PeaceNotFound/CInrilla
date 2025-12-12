@@ -49,7 +49,7 @@ typedef struct Enemy {
 
     EnemyState state;
 
-    int active;         // 1 = ativo, 0 = desligado
+    int active;        // 1 = ativo, 0 = desligado
 
     // texturas 2D 
     Texture2D texture;

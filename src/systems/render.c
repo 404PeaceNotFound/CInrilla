@@ -7,10 +7,6 @@ static Texture2D texBoar;
 static Texture2D texBee;
 static Texture2D texSnail;
 
-static Texture2D texBoar;
-static Texture2D texBee;
-static Texture2D texSnail;
-
 // --- Map & Player Rendering ---
 void Render_Map(EnvItem *envItems, int envLength) {
     for (int i = 0; i < envLength; i++){
@@ -24,7 +20,7 @@ void initPlayer(Player *player){
     player->isatk = false;
     player->PlayerDirection = 1;
     player->damage = 5;
-    player->health = 10;
+    player->health = 15;
 
     //Carregar Sons
     player->soundPlayer.Run = LoadSound("assets/sounds/Player/Run.mp3");
@@ -78,9 +74,27 @@ void Render_Player(Player *player) {
     //DrawCircleV(player->position, 5.0f, GOLD); Debug
 }
 
-void Render_UpdateCamera(Camera2D *camera, Player *player, int width, int height) {
-    camera->offset = (Vector2){ width/2.0f, height/2.0f };
+void Render_UpdateCamera(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, int width, int height) {
     camera->target = player->position;
+    camera->offset = (Vector2){ width/2.0f, height/2.0f };
+    float minX = 1000, minY = 1000, maxX = -1000, maxY = -1000;
+
+    for (int i = 0; i < envItemsLength; i++)
+    {
+        EnvItem *ei = envItems + i;
+        minX = fminf(ei->rect.x, minX);
+        maxX = fmaxf(ei->rect.x + ei->rect.width, maxX);
+        minY = fminf(ei->rect.y, minY);
+        maxY = fmaxf(ei->rect.y + ei->rect.height, maxY);
+    }
+
+    Vector2 max = GetWorldToScreen2D((Vector2){ maxX, maxY }, *camera);
+    Vector2 min = GetWorldToScreen2D((Vector2){ minX, minY }, *camera);
+
+    if (max.x < width) camera->offset.x = width - (max.x - width/2);
+    if (max.y < height) camera->offset.y = height - (max.y - height/2);
+    if (min.x > 0) camera->offset.x = width/2 - min.x;
+    if (min.y > 0) camera->offset.y = height/2 - min.y;
 }
 //spriets dos inimigos
 

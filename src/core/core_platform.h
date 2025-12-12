@@ -9,5 +9,6 @@ bool Core_ShouldClose(void);
 double Core_GetTime(void); // Delta time
 void Core_PlayMusic(void);
 void Core_PlaySoundUI(void);
+void Core_UpdateMusic(void);
 
 #endif

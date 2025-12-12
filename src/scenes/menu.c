@@ -2,6 +2,7 @@
 #include "../systems/systems.h"
 #include "../ui/ui.h"
 #include "../config/config.h"
+#include "../core/core_platform.h"
 
 static AnimacaoSpritesheet animMenu;
 static bool menuinicializado = false;
