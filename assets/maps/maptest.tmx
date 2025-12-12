@@ -327,7 +327,6 @@
  <tileset firstgid="626" name="Background (2)" tilewidth="16" tileheight="16" tilecount="896" columns="56">
   <image source="../images/background/Background (2).png" width="896" height="256"/>
  </tileset>
- <tileset firstgid="1522" source=":/automap-tiles.tsx"/>
  <layer id="2" name="Plants and Rocks" width="120" height="20">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,11,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
