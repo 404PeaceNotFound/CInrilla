@@ -7,7 +7,7 @@
         #include "../systems/enemy_system.h"
         #include "../ui/ui.h"
 
-        // player 
+
         static Player player;
         static EnvItem envItems[] = {
             {{ 0, 0, 2280, 800 }, 0, DARKBLUE }, // "background"
@@ -50,8 +50,6 @@ void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
             attackX = p->position.x - 20 - atkRange; // Na frente (Esquerda)
         }
 
-    if (IsKeyPressed(KEY_BACKSPACE)) return TELA_PAUSA;
-    if (player.health <= 0) return TELA_GAMEOVER;
         Rectangle atkRect = {
             attackX,
             p->position.y - 40,
@@ -59,65 +57,57 @@ void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
             atkHeight,
         };
 
-if (CheckCollisionRecs(atkRect, enemyRect)) {
-        
-        // 1. APLICA KNOCKBACK HORIZONTAL (Posição)
-        if (p->position.x < e->position.x) {
-            e->position.x += 30; // Empurra para Direita
-        } else {
-            e->position.x -= 30; // Empurra para Esquerda
+    if (CheckCollisionRecs(atkRect, enemyRect)) {
+            
+            e->health -= p->damage; // Aplica o Dano real
+            
+            // Garante que o dano só seja aplicado uma vez por ataque
+            p->hasHit = true; 
+            
+            // Aplica o Knockback Horizontal (Empurrão)
+            if (e->health > 0) {
+                // Determine a direção do empurrão
+                float knockbackAmount = 40.0f; 
+                e->position.x += (p->position.x < e->position.x) ? knockbackAmount : -knockbackAmount; 
+                
+                // Aplica Knockback Vertical (Pulo) se necessário
+                e->verticalSpeed = -100.0f; // Exemplo de pulo de dano
+            } else {
+                 e->active = 0; // Temporário: Garante que o inimigo suma após a morte
+            }
+            
+            return; // O inimigo foi atingido, não verifica mais colisões neste frame.
         }
-
-        e->active = 0; //Mata o inimigo (Temporario)
-        
-        // 2. APLICA KNOCKBACK VERTICAL (Pulo de dor)
-        // ERRADO: e->speed = -150; (Isso quebra a caminhada)
-        
-        // CERTO: Use verticalSpeed (se sua struct Enemy tiver essa variável)
-        // Se não tiver, verifique como você fez a gravidade do inimigo no Physics.
-        // Baseado no seu código anterior, você usou 'verticalSpeed' na física.
-        e->verticalSpeed = -100.0f; 
-        
-        // 3. TRAVA O ATAQUE
-        p->hasHit = true; 
-        
-        return; 
-    }
     }
 
     // ---------------------------------------------------------
     // ETAPA 2: VERIFICA COLISÃO DE CORPO (Dano no Player)
     // ---------------------------------------------------------
     if (CheckCollisionRecs(playerBody, enemyRect)) {
-        
-        bool isFalling = p->speed > 0;
-        bool isAbove = (p->position.y - 10) < enemyRect.y + (enemyRect.height * 0.5f);
+            if (p->invulnerabilityTimer <= 0) 
+            { 
+        // PLAYER TOMOU DANO
+                p->health -= e->damage; // Tira vida
+                p->invulnerabilityTimer = 2.0f; // Tempo de invulnerabilidade
+                p->canJump = false; // Força o estado aéreo para knockback
 
-        //if (isFalling && isAbove) {
-            // MATOU O INIMIGO (Pulo Mario)
-            //e->active = 0;      
-            //p->speed = -400.0f; 
-        //} 
-        //else {
-            // PLAYER TOMOU DANO
-            p->health -= 1; // Tira vida
-
-            // Empurrão no Player (para o player não ficar grudado no inimigo)
-            if (p->position.x < e->position.x) {
-                p->position.x -= 50; // Player vai para Esquerda
-            } else {
-                p->position.x += 50; // Player vai para Direita
+                // Empurrão no Player (Knockback)
+                if (p->position.x < e->position.x) {
+                    p->position.x -= 50; // Player vai para Esquerda
+                } else {
+                    p->position.x += 50; // Player vai para Direita
+                }
+                
+                p->speed = -200; // Pulo pequeno de dano (Knockback vertical)
             }
-            
-            p->speed = -200; // Pulo pequeno de dano
-       // }
+        }   
     }
-}
-        // init 
-        void Gameplay_Init(void) {
+
+// init 
+void Gameplay_Init(void) {
             Render_LoadAssets();
             //player
-            player.position = (Vector2){ 200, 400 };
+
             player.speed = 0;
             player.canJump = false;
             player.isatk = false;
@@ -131,31 +121,28 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
             camera.zoom = 1.0f;
 
             // Geração de inimigos
-            enemyCount = 0;
-
-            // --- INIMIGO 1: Javali (Boar) ---
-            enemies[enemyCount] = Enemy_Create((Vector2){600, 400}, 200, 500, 60); 
-            // AQUI ESTÁ A MÁGICA QUE FALTAVA:
-            Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR); 
-            enemyCount++;
-
-            // --- INIMIGO 2: Javali (Boar) ---
-            enemies[enemyCount] = Enemy_Create((Vector2){800, 400}, 700, 900, 60);
-            Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
-            enemyCount++;
-
-            // --- INIMIGO 3: Abelha (Bee) ---
-            enemies[enemyCount] = Enemy_Create((Vector2){800, 200}, 200, 500, 60); 
-            // Configura como Abelha
-            Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
-            enemyCount++;
-
+            enemyCount = 3  ;
+            ResetAllEnemies(enemies, enemyCount);
             
         }
 
 
-        EstadoJogo Gameplay_Update(void) { //Aqui rola a zuera de atualizar com o tempo
+EstadoJogo Gameplay_Update(void) { //Aqui rola a zuera de atualizar com o tempo
+            static bool resetGame = true;
 
+            // Reset an morte
+            if (resetGame) {
+                    //Reset Completo do Player 
+                    player.health = 5;
+                    player.state = PlayerIdle;
+                    player.isatk = false;
+                    player.speed = 0.0f;
+                    player.canJump = true;
+                    player.position = (Vector2){ 200, 400 };
+                    player.anim[PlayerDead].final = false;  
+                    ResetAllEnemies(enemies, enemyCount);  //reseta inimigos    
+                    resetGame = false;
+                }
 
             float dt = GetFrameTime();
 
@@ -175,12 +162,26 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
             
             if (IsKeyPressed(KEY_BACKSPACE)) return TELA_PAUSA;
             
-            if (player.health <= 0) return TELA_GAMEOVER;
+            if (player.state == PlayerDead) {
+                if (player.anim[player.state].final) {
+                    resetGame = true;   
+                    return TELA_GAMEOVER;
+                    }
+
+                    return TELA_GAMEPLAY;
+                }
             
-            if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
+            if (IsKeyPressed(KEY_ESCAPE)){
+                resetGame = true;
+                return TELA_MENU;
+            }
 
             if(player.anim[player.state].final){
-                player.state = PlayerIdle;
+                player.state = PlayerIdle;              
+                }
+
+            if (player.invulnerabilityTimer > 0) {
+                player.invulnerabilityTimer -= dt;
                 }
 
             // 5. Atualização dos Inimigos
@@ -198,7 +199,7 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
 
 
         //draw 
-        void Gameplay_Draw() {
+void Gameplay_Draw() {
             ClearBackground(LIGHTGRAY);
             
             BeginMode2D(camera);
@@ -207,11 +208,8 @@ if (CheckCollisionRecs(atkRect, enemyRect)) {
                 //render inimigos
                 for(int i =0; i < enemyCount; i++){
                     Render_Enemy(&enemies[i]);
-                    //DrawRectangle(enemies[i].position.x, enemies[i].position.y, 40, 40, RED); testes visuais
-                    //DrawCircle(enemies[i].position.x, enemies[i].position.y, 10, GREEN);
                 }
             EndMode2D();
             UI_DesenharHealthBar(player.health,player.health,LARGURA_TELA);
-            //DrawText(TextFormat("Vida: %d", player.health), 20, 50, 20, RED);
             DrawText("Controles: Setas + Espaco | ESC para voltar", 20, 20, 20, BLACK);
         }

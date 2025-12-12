@@ -4,16 +4,36 @@
 
 void Entities_ProcessPlayerInput(Player *player, float dt) {
 
+    bool isMoving = false; 
+
+    // ----------------------------------------------------------------
+    // 0. VERIFICAÇÃO DE MORTE
+    // ----------------------------------------------------------------
+    if (player->health <= 0) {
+        if (player->canJump) {
+            if (player->state != PlayerDead) {
+                player->position.y += 15.0f; 
+                player->state = PlayerDead;
+            }
+            player->speed = 0; 
+        } 
+        else {
+            player->state = PlayerJump; // Morte aérea: Transiciona para queda/knockback
+        }
+        return; // Bloqueia todo o resto se estiver morto
+    }
+
     // ----------------------------------------------------------------
     // 1. INPUT DE ATAQUE (Prioridade Máxima)
     // ----------------------------------------------------------------
-    //IsKeyPressed para não resetar a animação todo frame
-    if (IsKeyPressed(KEY_Z) && !player->isatk) {
+    // IsKeyPressed para não resetar a animação todo frame
+    // 🚨 CORREÇÃO: Bloqueia ataque se player estiver invulnerável
+    if (IsKeyPressed(KEY_Z) && !player->isatk && player->invulnerabilityTimer <= 0) {
         player->hasHit = false;
         player->isatk = true;
         player->state = PlayerAtk;
         
-        // Reset manual da animação para garantir que comece do frame 0
+        // Reset manual da animação
         player->anim[PlayerAtk].indiceFrameX = 0;
         player->anim[PlayerAtk].indiceFrameY = 0;
         player->anim[PlayerAtk].temporizador = player->anim[PlayerAtk].tempoPorFrame;
@@ -22,27 +42,20 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
         PlaySound(player->soundPlayer.Atk);
     }
 
-    // Se o jogador estiver no meio de um ataque, IGNORA movimentação (opcional)
-    // Se quiser que ele ande atacando, remova este bloco 'if'.
-    // Mas geralmente, travar o movimento dá mais peso ao golpe.
+    // Se o jogador estiver no meio de um ataque, IGNORA movimentação (Prioridade)
     if (player->isatk) {
         player->state = PlayerAtk;
-        // Se a animação acabou (sinalizada pelo render.c), libera o player
         if (player->anim[PlayerAtk].final) {
             player->isatk = false;
             player->state = PlayerIdle;
         }
-        // Retorna cedo para impedir que o código abaixo mude o state para Run
-        return; 
+        return; // Retorna cedo (ignora movimento/pulo/estado)
     }
 
     // ----------------------------------------------------------------
-    // 2. INPUT DE MOVIMENTO (Só roda se não estiver atacando)
+    // 2. INPUT DE MOVIMENTO (Atualiza isMoving)
     // ----------------------------------------------------------------
     
-    // Variável para saber se houve movimento neste frame
-    bool isMoving = false; 
-
     if (IsKeyDown(KEY_LEFT)) {
         player->position.x -= PLAYER_HOR_SPD * dt;
         player->PlayerDirection = -1;
@@ -57,7 +70,8 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
     // ----------------------------------------------------------------
     // 3. INPUT DE PULO
     // ----------------------------------------------------------------
-    if (IsKeyPressed(KEY_SPACE) && player->canJump) {
+    // Bloqueia pulo durante invulnerabilidade/knockback
+    if (IsKeyPressed(KEY_SPACE) && player->canJump && player->invulnerabilityTimer <= 0) {
         player->speed = -PLAYER_JUMP_SPD;
         player->canJump = false;
         player->state = PlayerJump;
@@ -65,19 +79,31 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
     }
 
     // ----------------------------------------------------------------
-    // 4. DEFINIÇÃO DE ESTADO (Atualização Visual)
+    // 4. DEFINIÇÃO DE ESTADO (Hierarquia de Prioridade)
     // ----------------------------------------------------------------
-
-    if (!player->canJump) {
-        // Se não pode pular, é porque está no ar
+    
+    // 1. PRIORIDADE: INVULNERABILIDADE/KNOCKBACK
+    if (player->invulnerabilityTimer > 0) {
+        if (!player->canJump) { // Se o player está no ar (knockback vertical)
+            player->state = PlayerJump; 
+        }
+        else if (isMoving) {
+        player->state = PlayerRun;
+        }  
+        else {
+            player->state = PlayerIdle; // Se já aterrissou, mas ainda invulnerável
+        }
+    }
+    // 2. PRIORIDADE: ESTADO AÉREO NORMAL (Jump/Fall)
+    else if (!player->canJump) {
         player->state = PlayerJump;
     } 
+    // 3. PRIORIDADE: MOVIMENTO HORIZONTAL
     else if (isMoving) {
-        // No chão e movendo
         player->state = PlayerRun;
     } 
+    // 4. ÚLTIMA PRIORIDADE: PARADO
     else {
-        // No chão e parado
         player->state = PlayerIdle;
     }
 

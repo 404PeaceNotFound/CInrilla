@@ -17,6 +17,9 @@ typedef enum {
 typedef struct Enemy {
     Vector2 position;
 
+    int damage;
+    int health;
+
     float verticalSpeed; // gravidade
 
     float leftLimit;
@@ -27,7 +30,6 @@ typedef struct Enemy {
     float width;
     float height;
 
-    // controle de animação
     int animBackwards; // vai e volta dos frames
 
     int frame;
@@ -67,5 +69,7 @@ void UpdateEnemy(Enemy *e, float dt);
 
 // desenha (só um retângulo)
 void DrawEnemy(Enemy *e);
+
+void ResetAllEnemies(Enemy *enemies, int count);
 
 #endif

@@ -11,7 +11,8 @@ typedef enum{
     PlayerRun, //1
     PlayerJump, //2
     PlayerAtk, //3
-    PlayerStateCount, //4
+    PlayerDead, //4
+    PlayerStateCount, //5
 }PlayerState;
 
 typedef struct {
@@ -51,6 +52,7 @@ typedef struct {
     AnimacaoSpritesheet anim[PlayerStateCount];
     PlayerState state;
     Sounds soundPlayer;
+    float invulnerabilityTimer;
 } Player;
 
 #endif

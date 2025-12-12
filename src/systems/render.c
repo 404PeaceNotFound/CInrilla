@@ -19,8 +19,9 @@ void initPlayer(Player *player){
     player->state = PlayerIdle;
     player->isatk = false;
     player->PlayerDirection = 1;
-    player->damage = 5;
-    player->health = 15;
+    player->damage = 3;
+    player->health = 10;
+    player->invulnerabilityTimer = 0;
 
     //Carregar Sons
     player->soundPlayer.Run = LoadSound("assets/sounds/Player/Run.mp3");
@@ -55,6 +56,14 @@ void initPlayer(Player *player){
         96,  // largura do frame
         64,   // altura do frame
         false, false);
+    
+    player->anim[PlayerDead] = Render_CreateAnim("assets/sprites/character/Dead/Dead-Sheet.png", //Atacar
+        8,   // framesX 
+        1,   // framesY
+        8,   // fps (0 para estático)
+        80,  // largura do frame
+        64,   // altura do frame
+        false, false);
 
     player->anim[player->state].indiceFrameX = 0;
     player->anim[player->state].indiceFrameY = 0; 
@@ -71,7 +80,6 @@ void Render_Player(Player *player) {
         Render_DrawAnim(player->anim[player->state], posicaoVisual, virar); //Carregar protagonista
     }
 
-    //DrawCircleV(player->position, 5.0f, GOLD); Debug
 }
 
 void Render_UpdateCamera(Camera2D *camera, Player *player, EnvItem *envItems, int envItemsLength, int width, int height) {
@@ -119,6 +127,8 @@ void Render_ConfigEnemy(Enemy *e, EnemyType type){
 
     switch (type) {
         case ENEMY_TYPE_BOAR:
+            e->damage = 2;
+            e->health = 5;
             e->texture = texBoar;
             e->frameWidth = 48;   
             e->frameHeight = 32; 
@@ -131,6 +141,8 @@ void Render_ConfigEnemy(Enemy *e, EnemyType type){
             break;
 
         case ENEMY_TYPE_SMALL_BEE:
+            e->damage = 2;
+            e->health = 5;
             e->texture = texBee;
             e->frameWidth = 64; 
             e->frameHeight = 64;
@@ -142,6 +154,8 @@ void Render_ConfigEnemy(Enemy *e, EnemyType type){
             break;
 
         case ENEMY_TYPE_SNAIL: //Problemas com a sprite do caracol
+            e->damage = 2;
+            e->health = 5;
             e->texture = texSnail;
             e->frameWidth = 32;
             e->frameHeight = 48;

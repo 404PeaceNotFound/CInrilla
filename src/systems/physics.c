@@ -3,9 +3,11 @@
 #include <raymath.h>
 
 void Physics_UpdatePlayer(Player *player, EnvItem *envItems, int envLength, float dt){
-    // Lógica extraída de UpdatePlayer no gameplay.c original
-    // Nota: Input foi movido para entities.c, aqui aplicamos a física resultante
-    
+    if (player->state == PlayerDead) {
+        player->speed = 0.0f; // Garante que não haja velocidade vertical residual.
+        return; // Sai da função imediatamente, protegendo player->position.y.
+    }
+
     bool hitObstacle = false;
     Vector2 *p = &(player->position);
 

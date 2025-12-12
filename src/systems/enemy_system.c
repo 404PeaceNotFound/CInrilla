@@ -2,8 +2,7 @@
 #include <raylib.h>  // se precisar (por causa de Vector2 / Color / etc.)
 #include <string.h>
 
-void InitEnemy(Enemy *e, Vector2 pos, float leftLimit, float rightLimit, float speed){
-
+void InitEnemy(Enemy *e, Vector2 pos, float leftLimit, float rightLimit, float speed){              
     e->position = pos;
     e->verticalSpeed = 0.0f;
 
@@ -76,5 +75,30 @@ void UpdateEnemy(Enemy *e, float dt){
         if(e->frame >= maxFrames){
             e->frame = 0;
         }
+    }
+}
+
+void ResetAllEnemies(Enemy *enemies, int count) {
+    // -------------------------------------------------------------------
+    // Definição dos Inimigos Fixos do Nível (Adapte ESTA LISTA!)
+    // -------------------------------------------------------------------
+    
+    // Inimigo 1 (BOAR)
+    InitEnemy(&enemies[0], (Vector2){600, 400}, 500.0f, 700.0f, 40.0f);
+    Render_ConfigEnemy(&enemies[0], ENEMY_TYPE_BOAR); 
+    
+    // Inimigo 2 (SMALL_BEE)
+    InitEnemy(&enemies[1], (Vector2){1200, 350}, 1100.0f, 1300.0f, 60.0f);
+    Render_ConfigEnemy(&enemies[1], ENEMY_TYPE_SMALL_BEE); 
+
+    // Inimigo 3 (SNAIL)
+    InitEnemy(&enemies[2], (Vector2){200, 400}, 100.0f, 300.0f, 20.0f);
+    Render_ConfigEnemy(&enemies[2], ENEMY_TYPE_BOAR); 
+    
+    // -------------------------------------------------------------------
+
+    // Desativa inimigos extras, se o count for maior que 3
+    for (int i = 3; i < count; i++) {
+        enemies[i].active = 0;
     }
 }
