@@ -28,11 +28,11 @@ void Creditos_Draw(void) {
     Render_DrawAnim(animFundo, (Vector2){LARGURA_TELA/2.0f, ALTURA_TELA/2.0f}, false);
     
     UI_DesenharTextoCentralizado("CREDITOS", 50, 100, WHITE);
-    UI_DesenharTextoCentralizado("Gabriel Vieira <g>", ALTURA_TELA/2.0f - 100, 50, WHITE);
-    UI_DesenharTextoCentralizado("Guilherme Vitor <g>", ALTURA_TELA/2.0f - 50, 50, WHITE);
+    UI_DesenharTextoCentralizado("Gabriel Vieira do Nascimento do Rego Barros <gvnrb>", ALTURA_TELA/2.0f - 100, 50, WHITE);
+    UI_DesenharTextoCentralizado("Guilherme Vitor Costa de Araujo <gvca>", ALTURA_TELA/2.0f - 50, 50, WHITE);
     UI_DesenharTextoCentralizado("João <j>", ALTURA_TELA/2.0f, 50, WHITE);
-    UI_DesenharTextoCentralizado("José <j>", ALTURA_TELA/2.0f + 50, 50, WHITE);
-    UI_DesenharTextoCentralizado("Luciano <l>", ALTURA_TELA/2.0f + 100, 50, WHITE);
+    UI_DesenharTextoCentralizado("José Lucas Honório Melo <jlhm>", ALTURA_TELA/2.0f + 50, 50, WHITE);
+    UI_DesenharTextoCentralizado("Luciano José da Silva Junior <ljsj>", ALTURA_TELA/2.0f + 100, 50, WHITE);
     UI_DesenharBotao(&btnVoltar);
 }
 
