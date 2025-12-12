@@ -35,6 +35,7 @@ typedef struct{
     Sound Run;
     Sound Atk;
     Sound Jump;
+    Sound hitEnemy;
    
 }Sounds;
 

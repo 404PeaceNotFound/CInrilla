@@ -25,6 +25,7 @@ void initPlayer(Player *player){
 
     //Carregar Sons
     player->soundPlayer.Run = LoadSound("assets/sounds/Player/Run.mp3");
+    SetSoundVolume(player->soundPlayer.Run, 10);
     player->soundPlayer.Atk = LoadSound("assets/sounds/Player/Atk.mp3");
     player->soundPlayer.Jump = LoadSound("assets/sounds/Player/Jump.mp3");
 
