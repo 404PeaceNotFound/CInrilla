@@ -85,13 +85,17 @@ typedef struct {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-    // Física e Lógica Básica
+    // Física e Movimento
     Vector2 position;
-    float speed;         // Velocidade Horizontal de movimento
-    float verticalSpeed; // Velocidade Vertical (Gravidade)
+    float speed;
+    float verticalSpeed;
     int direction;       // 1 ou -1
     
-    // Dimensões de Colisão (Hitbox)
+    // Limites de Patrulha (Antigos leftLimit/rightLimit)
+    float minX; 
+    float maxX; 
+
+    // Dimensões
     float width;
     float height;
     
@@ -101,32 +105,30 @@ typedef struct {
     EnemyType type;
     EnemyState state;
 
-    // IA Simples (Patrulha)
-    float minX; // Limite esquerdo da patrulha
-    float maxX; // Limite direito da patrulha
-
-    // Renderização e Controle de Sprites
+    // Renderização e Animação
     bool useTexture;
     Texture2D texture;
     
-    int frame;           // Frame atual (0 a maxFrames)
-    float frameTime;     // Tempo por frame (ex: 0.1f)
-    float timer;         // Acumulador de tempo delta
+    // Controle de Frames (Antigos frame/frameTimer)
+    int frame;           
+    float frameTime;     
+    float timer;         // Substitui "frameTimer"
     
-    // Configuração do Spritesheet (Preenchido pelo Render_ConfigEnemy)
-    int frameWidth;      // Largura de 1 frame na imagem
-    int frameHeight;     // Altura de 1 frame na imagem
+    // Configuração do Spritesheet
+    int frameWidth;      
+    int frameHeight;     
     
-    // Mapeamento de Linhas (Rows) no Spritesheet
+    // Linhas do Spritesheet
     int rowIdle;
     int rowWalk;
     int rowRun;
     int rowAttack;
     
-    // Quantidade de frames por animação
+    // Máximos de Frames
     int maxFramesIdle;
     int maxFramesWalk;
     int maxFramesRun;
+    int maxFramesAttack;
 } Enemy;
 
 // Protótipo da Factory (Implementada em entities.c)

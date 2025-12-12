@@ -56,16 +56,4 @@ typedef struct Enemy {
     int useTexture; // 0 = retângulo, 1 = sprite
 } Enemy;
 
-// inicializa um inimigo já alocado
-void InitEnemy(Enemy *e, Vector2 pos, float leftLimit, float rightLimit, float speed);
-
-// cria e retorna um Enemy pronto
-Enemy Enemy_Create(Vector2 pos, float leftLimit, float rightLimit, float walkSpeed);
-
-// atualiza lógica
-void UpdateEnemy(Enemy *e, float dt);
-
-// desenha (só um retângulo)
-void DrawEnemy(Enemy *e);
-
 #endif

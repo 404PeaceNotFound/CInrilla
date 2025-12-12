@@ -1,4 +1,5 @@
-#include "entities.h" // Se tiver um header próprio, ou incluir systems.h
+#include "entities.h"
+#include "../systems/systems.h"
 #include "../data/entity_types.h"
 #include <raylib.h>
 
@@ -26,7 +27,7 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
         player->speed = -500.0f; // PLAYER_JUMP_SPD
         player->canJump = false;
         // Tocar som de pulo se existir
-        if(IsSoundReady(player->soundPlayer.Jump)) PlaySound(player->soundPlayer.Jump);
+        if(IsSoundValid(player->soundPlayer.Jump)) PlaySound(player->soundPlayer.Jump);
     }
 
     // Estado de Pulo
@@ -43,7 +44,7 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
         player->anim[PlayerAtk].indiceFrameX = 0;
         player->anim[PlayerAtk].final = false;
         
-        if(IsSoundReady(player->soundPlayer.Atk)) PlaySound(player->soundPlayer.Atk);
+        if(IsSoundValid(player->soundPlayer.Atk)) PlaySound(player->soundPlayer.Atk);
     }
 
     // Controle de fim de ataque
@@ -58,22 +59,45 @@ void Entities_ProcessPlayerInput(Player *player, float dt) {
 // Factory de Inimigos
 Enemy Enemy_Create(Vector2 pos, float minX, float maxX, float speed) {
     Enemy e = {0};
+    
+    // 1. Física Básica
     e.position = pos;
-    e.minX = minX;
-    e.maxX = maxX;
+    e.minX = minX; // Antigo leftLimit
+    e.maxX = maxX; // Antigo rightLimit
     e.speed = speed;
-    e.verticalSpeed = 0;
+    e.verticalSpeed = 0.0f;
     e.direction = 1;
     e.active = true;
-    e.health = 3; // Valor padrão
-    e.state = ENEMY_STATE_WALK; // Começa andando
+    e.health = 3; 
     
-    // Valores padrão de renderização (serão sobrescritos por Render_ConfigEnemy)
-    e.width = 32;
-    e.height = 32;
-    e.useTexture = false;
-    e.timer = 0;
+    // 2. Dimensões Padrão
+    e.width = 30;
+    e.height = 30;
+
+    // 3. Estado Inicial
+    e.state = ENEMY_STATE_WALK; 
+
+    // 4. Configuração de Animação Padrão (Fallback)
+    // Esses valores evitam crash se Render_ConfigEnemy não for chamado,
+    // mas idealmente serão sobrescritos por ele.
     e.frame = 0;
+    e.frameTime = 0.12f;
+    e.timer = e.frameTime; // Antigo frameTimer
+    
+    e.frameWidth = 64;
+    e.frameHeight = 64;
+    
+    e.maxFramesIdle = 4;
+    e.maxFramesWalk = 6;
+    e.maxFramesRun = 6;
+    e.maxFramesAttack = 2;
+
+    e.rowIdle = 0;
+    e.rowWalk = 1;
+    e.rowRun = 2;
+    e.rowAttack = 3;
+
+    e.useTexture = false; // Começa sem textura até carregar assets
     
     return e;
 }

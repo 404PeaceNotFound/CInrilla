@@ -3,6 +3,7 @@
 #include "../data/map_data.h"
 #include "../data/map_loader.h"
 #include "../data/entity_types.h"
+#include "../entities/entities.h"
 #include "../systems/systems.h"
 #include "../ui/ui.h"
 

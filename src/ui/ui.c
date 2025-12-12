@@ -1,4 +1,7 @@
 #include "ui.h"
+#include "../config/config.h"
+#include <raylib.h>
+#include <math.h> // Necessário para fmaxf, fminf se a Raylib não tiver o Clamp
 
 void UI_DesenharBotao(BotaoUI* botao) {
     Color corBotao = botao->estaSelecionado ? 
@@ -19,24 +22,29 @@ void UI_DesenharTextoCentralizado(const char* texto, int y, int tamanho, Color c
     DrawText(texto, (GetScreenWidth() - largura) / 2, y, tamanho, cor);
 }
 
-void UI_DesenharHealthBar(int HealthAtual, int HealthMax ,int Largura_Tela){
-    
+void UI_DesenharHealthBar(int HealthAtual, int HealthMax, int screenWidth) {
+    // Dimensões fixas para a barra
     const int BarTamanhoMax = 200;
     const int BarAltura = 20;
+    const int BarX = 50;
+    const int BarY = 50;
 
-    float BarTamanho =((float)HealthAtual / HealthMax) * BarTamanhoMax;
-    int x = Largura_Tela - BarTamanhoMax - 20;
-    int y = 20;
+    // Calcula a largura atual da barra com base na saúde
+    // Variável HealthBarWidth é agora usada para armazenar o cálculo e desenhar
+    float HealthBarWidth = ((float)HealthAtual / HealthMax) * BarTamanhoMax;
 
-    DrawRectangle(x,y,BarTamanhoMax,BarAltura,GRAY);
+    // Garante que a barra não seja negativa
+    HealthBarWidth = fmaxf(0, HealthBarWidth); 
+    
+    // Fundo da barra (Container)
+    DrawRectangle(BarX, BarY, BarTamanhoMax, BarAltura, GRAY); 
+    
+    // Barra de Vida
+    DrawRectangle(BarX, BarY, (int)HealthBarWidth, BarAltura, RED);
 
-    Color barCor = GREEN;
-    if (HealthAtual< HealthMax/4) barCor = RED;
-    else if (HealthAtual < HealthAtual/2) barCor = ORANGE;
-    else barCor = GREEN;
+    // Borda da barra
+    DrawRectangleLines(BarX, BarY, BarTamanhoMax, BarAltura, BLACK);
 
-    DrawRectangle(x, y,(int)BarTamanhoMax,BarAltura, barCor);
-    DrawRectangleLines(x, y, BarTamanhoMax, BarAltura, GRAY);
-    DrawText(TextFormat("%d / %d", HealthAtual, HealthMax), x, y + 25,20, BLACK);
-
+    // Texto (Exemplo: "10/15")
+    DrawText(TextFormat("%d / %d", HealthAtual, HealthMax), BarX + BarTamanhoMax + 10, BarY, 20, WHITE);
 }

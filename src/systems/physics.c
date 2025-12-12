@@ -75,50 +75,74 @@ void Physics_UpdatePlayer(Player *player, GameMap* map, float dt) {
 void Physics_UpdateEnemy(Enemy *enemy, GameMap *map, float dt) {
     if (!enemy->active) return;
 
-    // --- Física Vertical (Gravidade) ---
+    // -----------------------------------------------------------
+    // 1. GRAVIDADE E COLISÃO VERTICAL (Mantém nossa lógica nova)
+    // -----------------------------------------------------------
     bool hitGround = false;
     float nextY = enemy->position.y + enemy->verticalSpeed * dt;
-    
-    // Hitbox vertical do inimigo
     Rectangle vertRect = { enemy->position.x, nextY - enemy->height, enemy->width, enemy->height };
 
     if (CheckMapCollision(map, vertRect)) {
         if (enemy->verticalSpeed >= 0) {
-            // Colidiu com chão
             int footTileY = (int)(nextY / map->tileHeight);
             enemy->position.y = (float)(footTileY * map->tileHeight);
             enemy->verticalSpeed = 0.0f;
             hitGround = true;
         } else {
-            // Colidiu com teto
             enemy->verticalSpeed = 0.0f;
         }
     } else {
         enemy->position.y = nextY;
     }
 
-    if (!hitGround) {
-        enemy->verticalSpeed += GRAVIDADE * dt;
-    }
+    if (!hitGround) enemy->verticalSpeed += GRAVIDADE * dt;
 
-    // --- Movimento Horizontal IA (Patrulha Boid/Parede) ---
+    // -----------------------------------------------------------
+    // 2. MOVIMENTO HORIZONTAL COM PATRULHA (Lógica do seu UpdateEnemy adaptada)
+    // -----------------------------------------------------------
     float moveX = enemy->direction * enemy->speed * dt;
-    Rectangle horizRect = { enemy->position.x + moveX, enemy->position.y - enemy->height + 5, enemy->width, enemy->height - 10 };
+    float nextX = enemy->position.x + moveX;
+    
+    // Verifica colisão com parede do mapa (Tile)
+    Rectangle horizRect = { nextX, enemy->position.y - enemy->height + 5, enemy->width, enemy->height - 10 };
+    bool hitWall = CheckMapCollision(map, horizRect);
 
-    // Se bater na parede, inverte direção
-    if (CheckMapCollision(map, horizRect)) {
-        enemy->direction *= -1;
+    // Verifica limites da Patrulha (minX / maxX)
+    bool hitPatrolLimit = (nextX + enemy->width >= enemy->maxX) || (nextX <= enemy->minX);
+
+    if (hitWall || hitPatrolLimit) {
+        enemy->direction *= -1; // Vira
+        // Ajuste fino de posição para não travar
+        if(nextX <= enemy->minX) enemy->position.x = enemy->minX;
+        else if(nextX + enemy->width >= enemy->maxX) enemy->position.x = enemy->maxX - enemy->width;
     } else {
-        enemy->position.x += moveX;
+        enemy->position.x = nextX;
+    }
+    
+    // Define estado como WALK se estiver se movendo
+    enemy->state = ENEMY_STATE_WALK;
+
+    // -----------------------------------------------------------
+    // 3. ATUALIZAÇÃO DE FRAME DE ANIMAÇÃO (Portado do seu UpdateEnemy)
+    // -----------------------------------------------------------
+    int maxFramesCurrent = 1;
+    switch(enemy->state) {
+        case ENEMY_STATE_IDLE: maxFramesCurrent = enemy->maxFramesIdle; break;
+        case ENEMY_STATE_WALK: maxFramesCurrent = enemy->maxFramesWalk; break;
+        case ENEMY_STATE_RUN:  maxFramesCurrent = enemy->maxFramesRun; break;
+        case ENEMY_STATE_ATTACK: maxFramesCurrent = enemy->maxFramesAttack; break;
+        default: maxFramesCurrent = enemy->maxFramesWalk; break;
     }
 
-    // Opcional: Lógica para não cair em buracos (Raycast para baixo na frente)
-    // Se quiser que ele vire ao chegar na borda da plataforma:
-    /*
-    float lookAhead = (enemy->width / 2.0f + 5) * enemy->direction;
-    Rectangle floorCheck = { enemy->position.x + enemy->width/2.0f + lookAhead, enemy->position.y + 2, 5, 5 };
-    if (!CheckMapCollision(map, floorCheck) && hitGround) {
-        enemy->direction *= -1; // Vira se não tiver chão na frente
+    if(maxFramesCurrent <= 0) maxFramesCurrent = 1;
+
+    enemy->timer -= dt; // Antigo frameTimer
+
+    if(enemy->timer < 0) {
+        enemy->timer = enemy->frameTime;
+        enemy->frame++;
+        if(enemy->frame >= maxFramesCurrent) {
+            enemy->frame = 0;
+        }
     }
-    */
 }
