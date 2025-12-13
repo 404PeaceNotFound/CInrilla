@@ -216,18 +216,23 @@ void Gameplay_Draw(void) {
     BeginMode2D(camera);
         Render_Map(&gameMap);    
         
+        // Renderiza e conta inimigos vivos ao mesmo tempo
+        int vivosVisuais = 0;
         for(int i = 0; i < enemyCount; i++){
-            Render_Enemy(&enemies[i]);
+            if (enemies[i].active) {
+                Render_Enemy(&enemies[i]);
+                vivosVisuais++;
+            }
         }
         
         Render_Player(&player);  
     EndMode2D();
 
     UI_DesenharHealthBar(player.health, 15, LARGURA_TELA); 
-    DrawText(TextFormat("Nivel: %d | Inimigos: %d", nivelAtual, enemyCount), 20, 80, 20, BLACK);
     
-    // Debug Posição
-    // DrawText(TextFormat("X: %.0f Y: %.0f", player.position.x, player.position.y), 20, 110, 20, RED);
+    // CORRIGIDO: Usa a contagem local 'vivosVisuais' em vez de enemyCount estático
+    DrawText(TextFormat("Nivel: %d | Inimigos: %d", nivelAtual, vivosVisuais), 20, 80, 20, BLACK);
+    DrawText(TextFormat("Pos: %.0f, %.0f", player.position.x, player.position.y), 10, 150, 20, RED);
 }
 
 void Gameplay_Deinit(void) {
