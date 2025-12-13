@@ -167,9 +167,7 @@ void CarregarNivel(int nivel) {
         enemyCount++;
         
         // Javali no final (X=80, Y=40 - bem baixo)
-        enemies[enemyCount] = Enemy_Create((Vector2){80 * 16, 40 * 16}, 75 * 16, 85 * 16, 90);
-        Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
-        enemyCount++;
+
     }
 }
 
@@ -247,7 +245,7 @@ if (inimigosVivos == 0) {
 // Draw
 void Gameplay_Draw(void) {
     ClearBackground(SKYBLUE); 
-
+    Render_DrawBackground(LARGURA_TELA, ALTURA_TELA);
     BeginMode2D(camera);
         Render_Map(&gameMap);    
         

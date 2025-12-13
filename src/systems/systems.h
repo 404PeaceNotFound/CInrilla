@@ -20,6 +20,7 @@ void Render_UpdatePlayerAnim(Player *player, float dt);
 
 // Map & Camera
 void Render_Map(GameMap* map);
+void Render_DrawBackground(int larguraTela, int alturaTela);
 void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int width, int height);
 
 // Enemy

@@ -7,6 +7,7 @@
 static Texture2D texBoar;
 static Texture2D texBee;
 static Texture2D texSnail;
+static Texture2D background;
 
 // ============================================================================
 // SISTEMA DE MAPA
@@ -217,12 +218,17 @@ void Render_LoadAssets(void) {
     
     if(FileExists("assets/sprites/enemies/Snail/walk-Sheet.png"))
         texSnail = LoadTexture("assets/sprites/enemies/Snail/walk-Sheet.png");
+
+    if(FileExists("assets/sprites/background/sky.png")) {
+        background = LoadTexture("assets/images/background/Background (2).png");
+    }
 }
 
 void Render_UnloadAssets(void) {
     if(texBoar.id != 0) UnloadTexture(texBoar); 
     if(texBee.id != 0) UnloadTexture(texBee);
     if(texSnail.id != 0) UnloadTexture(texSnail);
+    if(background.id != 0) UnloadTexture(background);
 }
 
 void Render_ConfigEnemy(Enemy *e, EnemyType type) {
@@ -295,6 +301,16 @@ void Render_Enemy(Enemy *e) {
     };
     
     DrawTexturePro(e->texture, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
+}
+
+void Render_DrawBackground(int larguraTela, int alturaTela) {
+    if (background.id == 0) return; // Se não carregou, não faz nada
+
+    // Estica a imagem para caber na tela
+    Rectangle source = { 0, 0, background.width, background.height };
+    Rectangle dest = { 0, 0, (float)larguraTela, (float)alturaTela };
+    
+    DrawTexturePro(background, source, dest, (Vector2){0, 0}, 0.0f, WHITE);
 }
 
 // ============================================================================
