@@ -46,6 +46,7 @@ EstadoJogo Menu_Update(void) {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         if (btnJogar.estaSelecionado) {
             // --- IMPORTANTE: PARE A MÚSICA AQUI ---
+            Gameplay_Reiniciar();
             if (musicaMenu.ctxData != NULL) StopMusicStream(musicaMenu);
             // --------------------------------------
             return TELA_GAMEPLAY;
