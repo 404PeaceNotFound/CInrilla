@@ -6,11 +6,15 @@
 #include "../entities/entities.h"
 #include "../systems/systems.h"
 #include "../ui/ui.h"
+#include <stddef.h>
 
 // Variáveis Estáticas
 static Player player;
 static GameMap gameMap;
 static Camera2D camera;
+static Music musicFase1;
+static Music musicFase2;
+static Music* musicaAtual = NULL;
 
 // Controle de Níveis
 static int nivelAtual = 1;
@@ -84,29 +88,48 @@ void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
 // -----------------------------------------------------------------------------
 // Lógica Fase
 void CarregarNivel(int nivel) {
-    // --- CORREÇÃO FUNDAMENTAL ---
-    // Atualiza a variável global para saber em qual nível estamos de verdade
+    // 1. Atualiza nível atual
     nivelAtual = nivel; 
-    // ----------------------------
 
+    // 2. Limpa mapa anterior
     if (gameMap.loaded) MapLoader_Unload(&gameMap);
     
     enemyCount = 0; 
 
-    // Verificação de segurança
+    // Segurança
     if (nivel > MAX_NIVEIS) {
         nivelAtual = 1;
         nivel = 1;
     }
 
-    // Carregar Mapa
+    // 3. SISTEMA DE MÚSICA (Faltava isso!)
+    // =================================================================
+    // A. Para a música anterior (se houver)
+    if (musicaAtual != NULL && musicaAtual->ctxData != NULL) {
+        StopMusicStream(*musicaAtual);
+    }
+
+    // B. Escolhe a nova música
+    musicaAtual = NULL; // Reseta para evitar erros
+    
+    if (nivel == 1) {
+        if (musicFase1.ctxData != NULL) musicaAtual = &musicFase1;
+    } 
+    else if (nivel == 2) {
+        if (musicFase2.ctxData != NULL) musicaAtual = &musicFase2;
+    }
+
+    // C. Toca a nova música
+    if (musicaAtual != NULL) {
+        PlayMusicStream(*musicaAtual);
+        SetMasterVolume(1.0f);
+    }
+    // =================================================================
+
+    // 4. Carrega Mapa e Reseta Player
     gameMap = MapLoader_Load(caminhosMapas[nivel - 1]);
 
-    // Resetar Player
-// 1. Resetar Vida (Crucial!)
     player.health = 10;
-    
-    // 2. Resetar Física e Estado
     player.speed = 0;
     player.canJump = false;
     player.isatk = false;
@@ -114,23 +137,16 @@ void CarregarNivel(int nivel) {
     player.hurtTimer = 0; 
     player.PlayerDirection = 1;
     
-    // 3. Resetar Animação de Morte
-    // Isso impede que o jogo ache que a animação já acabou
     player.anim[PlayerDead].final = false;     
     player.anim[PlayerDead].indiceFrameX = 0;
     player.anim[PlayerDead].temporizador = 0;
     
-    // =========================================================================
-    // CONFIGURAÇÃO DE SPAWN (PLAYER E INIMIGOS)
-    // =========================================================================
-    
+    // 5. CONFIGURAÇÃO DE SPAWN
     if (nivel == 1) {
-        // --- FASE 1 (120x20 tiles) ---
-        // Player: X=2, Y=7
+        // --- FASE 1 ---
         player.renderoffsetY = 32.0f;
         player.position = (Vector2){ 2 * 16, 7 * 16 };
 
-        // Inimigos Fase 1
         enemies[enemyCount] = Enemy_Create((Vector2){40 * 16, 12 * 16}, 35 * 16, 45 * 16, 60); 
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR); 
         enemyCount++;
@@ -139,35 +155,28 @@ void CarregarNivel(int nivel) {
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
         enemyCount++;
         
-        // Inimigo Final Fase 1
         enemies[enemyCount] = Enemy_Create((Vector2){110 * 16, 12 * 16}, 105 * 16, 115 * 16, 80); 
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR); 
         enemyCount++;
     } 
     else if (nivel == 2) {
-        // --- FASE 2 (90x50 tiles) ---
-        // Player: X=9, Y=7 (Conforme solicitado)
-        // Y = 7 * 16 = 112 pixels.
+        // --- FASE 2 ---
         player.renderoffsetY = 20.0f;
-        player.position = (Vector2){ 
-            9 * 16,   //X
-            40 * 16    
-        };
+        player.position = (Vector2){ 9 * 16, 40 * 16 };
 
-        // Inimigos Fase 2 (Ajustados para o mapa de 90 tiles largura)
-        
-        // Abelha alta no início (X=20, Y=5)
         enemies[enemyCount] = Enemy_Create((Vector2){20 * 16, 40 * 16}, 15 * 16, 25 * 16, 50);
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
         enemyCount++;
 
-        // Javali no meio do mapa (X=45, Y=20 - descendo)
         enemies[enemyCount] = Enemy_Create((Vector2){45 * 16, 20 * 16}, 40 * 16, 50 * 16, 70);
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
         enemyCount++;
         
+        // --- CÓDIGO QUE ESTAVA FALTANDO AQUI EMBAIXO: ---
         // Javali no final (X=80, Y=40 - bem baixo)
-
+        enemies[enemyCount] = Enemy_Create((Vector2){80 * 16, 40 * 16}, 75 * 16, 85 * 16, 90);
+        Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
+        enemyCount++;
     }
 }
 
@@ -175,6 +184,17 @@ void CarregarNivel(int nivel) {
 // Inicialização
 void Gameplay_Init(void) {
     Render_LoadAssets();
+
+    if (FileExists("assets/sounds/OST/04 - Silent Forest.ogg")) {
+        musicFase1 = LoadMusicStream("assets/sounds/OST/04 - Silent Forest.ogg");
+        musicFase1.looping = true;
+    }
+    
+    if (FileExists("assets/sounds/OST/20 - The Journey.ogg")) {
+        musicFase2 = LoadMusicStream("assets/sounds/OST/20 - The Journey.ogg");
+        musicFase2.looping = true;
+    }
+
     initPlayer(&player); 
     
     nivelAtual = 1;
@@ -190,7 +210,9 @@ void Gameplay_Init(void) {
 // Update
  EstadoJogo Gameplay_Update(void) {
     float dt = GetFrameTime();
-
+    if (musicaAtual != NULL && musicaAtual->ctxData != NULL) {
+            UpdateMusicStream(*musicaAtual);
+        }
     if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
 
     // --- 1. LÓGICA DE MORTE ---
@@ -266,6 +288,8 @@ void Gameplay_Draw(void) {
 void Gameplay_Deinit(void) {
     MapLoader_Unload(&gameMap);
     Render_UnloadAssets();
+    if (musicFase1.ctxData != NULL) UnloadMusicStream(musicFase1);
+    if (musicFase2.ctxData != NULL) UnloadMusicStream(musicFase2);
 }
 
 void Gameplay_Reiniciar(void) {

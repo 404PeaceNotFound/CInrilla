@@ -42,12 +42,14 @@
                 player->position.x += 300.0f * dt; 
                 player->PlayerDirection = 1;
                 if (player->canJump) player->state = PlayerRun;
+                
             }
             if (IsKeyDown(KEY_LEFT)) {
                 player->position.x -= 300.0f * dt;
                 player->PlayerDirection = -1;
                 if (player->canJump) player->state = PlayerRun;
             }
+
         }
         // ---------------------
 
@@ -83,6 +85,17 @@
             if (player->anim[PlayerAtk].final) {
                 player->isatk = false;
                 player->state = player->canJump ? PlayerIdle : PlayerJump;
+            }
+        }
+
+        if(player->state == PlayerRun){
+            if (!IsSoundPlaying(player->soundPlayer.Run)) {
+                PlaySound(player->soundPlayer.Run);
+            }
+        }
+        else{
+            if (IsSoundPlaying(player->soundPlayer.Run)) {
+                StopSound(player->soundPlayer.Run);
             }
         }
     }
