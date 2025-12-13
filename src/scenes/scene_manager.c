@@ -5,6 +5,27 @@
 
 static EstadoJogo estadoAtual = TELA_MENU;
 
+// ============================================================================
+// FUNÇÕES LOCAIS DA TELA DE TRANSIÇÃO
+// (Pode colocar aqui mesmo para facilitar)
+// ============================================================================
+EstadoJogo Transicao_Update(void) {
+    // Espera o jogador apertar ENTER para continuar
+    if (IsKeyPressed(KEY_ENTER)) {
+        return TELA_GAMEPLAY; 
+    }
+    return TELA_TRANSICAO;
+}
+
+void Transicao_Draw(void) {
+    // Desenha uma tela escura com texto
+    ClearBackground(BLACK); 
+    DrawText("FASE CONCLUIDA!", 300, 200, 40, GREEN);
+    DrawText("Pressione ENTER para a proxima fase", 250, 300, 20, WHITE);
+}
+// ============================================================================
+
+
 void SM_Init(void) {
     Menu_Init();
     Gameplay_Init();
@@ -22,30 +43,57 @@ void SM_Update(void) {
     switch (estadoAtual) {
         case TELA_MENU: proximoEstado = Menu_Update(); break;
         case TELA_GAMEPLAY: proximoEstado = Gameplay_Update(); break;
+        
+        // --- ADICIONE ISTO ---
+        case TELA_TRANSICAO: proximoEstado = Transicao_Update(); break;
+        // ---------------------
+        
         case TELA_CREDITOS: proximoEstado = Creditos_Update(); break;
         case TELA_PAUSA: proximoEstado = Pausa_Update(); break;
         case TELA_GAMEOVER: proximoEstado = GameOver_Update(); break;
         case TELA_WINNER: proximoEstado = Winner_Update(); break;
         default: break;
     }
+
+    // --- LÓGICA DE MUDANÇA DE ESTADO ---
     if (proximoEstado != estadoAtual){
+        
         if (proximoEstado == TELA_PAUSA){
             Pausa_CapturaFundo();
         }
+
+        // SE O JOGADOR APERTOU ENTER NA TELA DE TRANSIÇÃO:
+        if (estadoAtual == TELA_TRANSICAO && proximoEstado == TELA_GAMEPLAY) {
+            Gameplay_ProximoNivel(); // <--- Carrega a Fase 2!
+        }
+
+        // SE O JOGADOR REINICIOU NO GAMEOVER:
+        if (estadoAtual == TELA_GAMEOVER && proximoEstado == TELA_GAMEPLAY) {
+            Gameplay_Reiniciar();
+        }
     }
+
     if (proximoEstado == TELA_SAIR) {
-        CloseWindow(); // Força saída
+        CloseWindow(); 
     }
     estadoAtual = proximoEstado;
 }
 
 void SM_Draw(void){
     BeginDrawing();
+    
+    // O ClearBackground(RAYWHITE) padrão pode ser movido para dentro dos cases
+    // ou mantido aqui. Mas a Transição vai pintar de Preto por cima.
     ClearBackground(RAYWHITE);
 
     switch (estadoAtual) {
         case TELA_MENU: Menu_Draw(); break;
         case TELA_GAMEPLAY: Gameplay_Draw(); break;
+        
+        // --- ADICIONE ISTO ---
+        case TELA_TRANSICAO: Transicao_Draw(); break;
+        // ---------------------
+        
         case TELA_CREDITOS: Creditos_Draw(); break;
         case TELA_PAUSA: Pausa_Draw(); break;
         case TELA_GAMEOVER: GameOver_Draw(); break;
@@ -59,5 +107,5 @@ void SM_Draw(void){
 void SM_Deinit(void) {
     Pausa_Deinit();
     Creditos_Deinit();
-    // Outros deinits se necessário
+    // Outros deinits...
 }

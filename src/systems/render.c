@@ -141,15 +141,32 @@ void Render_UnloadAnim(AnimacaoSpritesheet *anim) {
 // SISTEMA DO PLAYER
 // ============================================================================
 void Render_Player(Player *player) {
+    // Verifica se a textura é válida
     if(player->anim[player->state].spriteSheet.id > 0){
+        
         Vector2 posicaoVisual = player->position;
-        posicaoVisual.y -= 32.0f; // Offset visual
+        
+        // 1. Offset Global (para centralizar o boneco em pé)
+        posicaoVisual.y -= player->renderoffsetY;
+
+        // 2. CORREÇÃO DA MORTE (O Pulo do Gato)
+        // Se estiver morto, precisamos "desfazer" parte da subida acima
+        // ou empurrar ele mais para baixo.
+        if (player->state == PlayerDead) {
+            // Aumente este valor até ele tocar o chão. 
+            // Como você subiu 32 ali em cima, somar uns 15 ou 20 deve resolver.
+            posicaoVisual.y += 20.0f; 
+            
+            // Opcional: Ajuste lateral se ele cair desalinhado
+            // posicaoVisual.x -= 5.0f; 
+        }
 
         bool virar = (player->PlayerDirection == -1);
         
         // Efeito Visual de Dano (Piscar)
         if (player->hurtTimer > 0) {
-            if (((int)(GetTime() * 10) % 2) == 0) return;
+            // Pisca a cada 0.1s (lógica simplificada)
+            if (((int)(GetTime() * 10) % 2) == 0) return; 
         }
 
         Render_DrawAnim(player->anim[player->state], posicaoVisual, virar);
@@ -165,19 +182,27 @@ void initPlayer(Player *player) {
     player->isatk = false;
     player->PlayerDirection = 1;
     player->damage = 5;
-    player->health = 15;
+    player->health = 10;
     player->hurtTimer = 0;
 
     // Carregar Sons (Verifica se existem para evitar erros)
     if(FileExists("assets/sounds/Player/Run.mp3")) player->soundPlayer.Run = LoadSound("assets/sounds/Player/Run.mp3");
     if(FileExists("assets/sounds/Player/Atk.mp3")) player->soundPlayer.Atk = LoadSound("assets/sounds/Player/Atk.mp3");
     if(FileExists("assets/sounds/Player/Jump.mp3")) player->soundPlayer.Jump = LoadSound("assets/sounds/Player/Jump.mp3");
+    
 
     // Configurar Animações
     player->anim[PlayerIdle] = Render_CreateAnim("assets/sprites/character/Idle/Idle-Sheet.png", 4, 1, 6, 64, 64, true, false);
     player->anim[PlayerRun] = Render_CreateAnim("assets/sprites/character/Run/Run-Sheet.png", 8, 1, 7, 80, 64, true, false);
     player->anim[PlayerJump] = Render_CreateAnim("assets/sprites/character/Jumlp-All/Jump-All-Sheet.png", 15, 1, 6, 64, 64, true, false);
     player->anim[PlayerAtk] = Render_CreateAnim("assets/sprites/character/Attack-01/Attack-01-Sheet.png", 8, 1, 8, 96, 64, false, false);
+    player->anim[PlayerDead] = Render_CreateAnim("assets/sprites/character/Dead/Dead-Sheet.png", //Atacar
+        8,   // framesX 
+        1,   // framesY
+        8,   // fps (0 para estático)
+        80,  // largura do frame
+        64,   // altura do frame
+        false, false);
 }
 
 // ============================================================================
@@ -276,24 +301,35 @@ void Render_Enemy(Enemy *e) {
 // CAMERA
 // ============================================================================
 void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int width, int height) {
+    // Calcula o alvo ideal (onde a câmera QUERIA estar)
+    Vector2 targetIdeal = player->position;
+    
+    // Configura um offset (meio da tela)
     camera->offset = (Vector2){ width/2.0f, height/2.0f };
-    camera->target = player->position;
 
+    // --- A SOLUÇÃO DA TRAVADA ---
+    // Em vez de atribuir direto (=), usamos Lerp (Interpolação Linear).
+    // O 0.1f é a "preguiça". Quanto menor, mais suave (mas mais atrasada).
+    // Teste valores entre 0.05f e 0.15f.
+    
+    float smoothFactor = 0.1f; 
+
+    camera->target.x = Lerp(camera->target.x, targetIdeal.x, smoothFactor);
+    camera->target.y = Lerp(camera->target.y, targetIdeal.y, smoothFactor);
+    
+    // ----------------------------
+
+    // Travas do mapa (Clamp)
     if (!map->loaded) return;
 
-    float minX_world = 0.0f;
-    float minY_world = 0.0f;
-    float maxX_world = (float)map->width * map->tileWidth;
-    float maxY_world = (float)map->height * map->tileHeight;
-
-    float targetMinX = minX_world + width / 2.0f / camera->zoom; 
-    float targetMinY = minY_world + height / 2.0f / camera->zoom;
-    float targetMaxX = maxX_world - width / 2.0f / camera->zoom; 
-    float targetMaxY = maxY_world - height / 2.0f / camera->zoom;
-
-    if (targetMinX > targetMaxX) targetMinX = targetMaxX = (minX_world + maxX_world) / 2.0f;
-    if (targetMinY > targetMaxY) targetMinY = targetMaxY = (minY_world + maxY_world) / 2.0f;
-
-    camera->target.x = Clamp(camera->target.x, targetMinX, targetMaxX);
-    camera->target.y = Clamp(camera->target.y, targetMinY, targetMaxY);
+    // ... (Mantenha seu código de Clamp/Limites do mapa aqui, 
+    // mas aplique sobre camera->target atualizado pelo Lerp) ...
+    
+    float minX = width/2.0f / camera->zoom;
+    float maxX = (map->width * map->tileWidth) - minX;
+    float minY = height/2.0f / camera->zoom;
+    float maxY = (map->height * map->tileHeight) - minY;
+    
+    camera->target.x = Clamp(camera->target.x, minX, maxX);
+    camera->target.y = Clamp(camera->target.y, minY, maxY);
 }

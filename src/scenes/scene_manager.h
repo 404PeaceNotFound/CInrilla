@@ -4,6 +4,7 @@
 typedef enum {
     TELA_MENU,
     TELA_GAMEPLAY,
+    TELA_TRANSICAO,
     TELA_CREDITOS,
     TELA_SAIR,
     TELA_PAUSA,
@@ -35,6 +36,8 @@ void Gameplay_Init(void);
 EstadoJogo Gameplay_Update(void);
 void Gameplay_Draw(void);
 void Gameplay_Deinit(void);
+void Gameplay_Reiniciar(void);
+void Gameplay_ProximoNivel(void); 
 
 // funcoes credits
 void Creditos_Init(void);

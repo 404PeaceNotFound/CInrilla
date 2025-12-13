@@ -27,8 +27,9 @@ static int enemyCount = 0;
 
 // -----------------------------------------------------------------------------
 // Lógica de Colisão Player vs Inimigo
-bool CheckPlayerEnemyCollision(Player *p, Enemy *e) {
-    if (!e->active) return false;
+// Lógica de Colisão Player vs Inimigo
+void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
+    if (!e->active) return; // Void function não retorna true/false
 
     // Hitboxes
     Rectangle playerBody = { p->position.x - 20, p->position.y - 40, 40, 40 }; 
@@ -43,48 +44,56 @@ bool CheckPlayerEnemyCollision(Player *p, Enemy *e) {
         Rectangle atkRect = { attackX, p->position.y - 40, atkRange, atkHeight };
 
         if (CheckCollisionRecs(atkRect, enemyRect)) {
-            // Knockback no Inimigo
             if (p->position.x < e->position.x) e->position.x += 30;
             else e->position.x -= 30;
             
-            // Mata inimigo
             e->active = 0; 
-            // e->verticalSpeed = -100.0f; (Desnecessário se active = 0)
-            
             p->hasHit = true; 
-            return false; 
+            return; 
         }
     }
 
     // 2. DANO NO PLAYER (Inimigo toca no player)
-    // Só acontece se o player NÃO estiver invencível (hurtTimer <= 0)
     if (p->hurtTimer <= 0 && CheckCollisionRecs(playerBody, enemyRect)) {
         
-        p->health -= 1;  // Dano
-        p->speed = -300; // Pulo de dano (Aumentei um pouco para garantir que saia do chão)
-        p->canJump = false; // Garante que ele entre no estado de Pulo
-        
-        // Ativa Invencibilidade (1 segundo)
-        p->hurtTimer = 1.0f;
+        p->health -= 1; 
 
-        // Knockback no Player (Seguro)
-        float knockbackDist = 30.0f; 
-        float dir = (p->position.x < e->position.x) ? -1.0f : 1.0f; 
-        p->position.x += (knockbackDist * dir);
-        
-        if (p->health <= 0) return true; // Morreu -> GameOver
+        // --- VERIFICAÇÃO DE MORTE ---
+        if (p->health <= 0) {
+            p->health = 0;
+            p->state = PlayerDead; // Define estado de morte
+            
+            // Reinicia a animação de morte para garantir que toque do início
+            p->anim[PlayerDead].indiceFrameX = 0;
+            p->anim[PlayerDead].temporizador = 0;
+            p->anim[PlayerDead].final = false;
+            
+        } else {
+            // Se ainda estiver vivo, aplica knockback e invencibilidade
+            p->speed = -300; 
+            p->canJump = false; 
+            p->hurtTimer = 1.0f;
+
+            float knockbackDist = 30.0f; 
+            float dir = (p->position.x < e->position.x) ? -1.0f : 1.0f; 
+            p->position.x += (knockbackDist * dir);
+        }
     }
-    
-    return false;
 }
 
 // -----------------------------------------------------------------------------
 // Lógica Fase
 void CarregarNivel(int nivel) {
+    // --- CORREÇÃO FUNDAMENTAL ---
+    // Atualiza a variável global para saber em qual nível estamos de verdade
+    nivelAtual = nivel; 
+    // ----------------------------
+
     if (gameMap.loaded) MapLoader_Unload(&gameMap);
     
     enemyCount = 0; 
 
+    // Verificação de segurança
     if (nivel > MAX_NIVEIS) {
         nivelAtual = 1;
         nivel = 1;
@@ -94,11 +103,22 @@ void CarregarNivel(int nivel) {
     gameMap = MapLoader_Load(caminhosMapas[nivel - 1]);
 
     // Resetar Player
+// 1. Resetar Vida (Crucial!)
+    player.health = 10;
+    
+    // 2. Resetar Física e Estado
     player.speed = 0;
     player.canJump = false;
     player.isatk = false;
     player.state = PlayerIdle;
-    player.hurtTimer = 0; // Reseta invencibilidade
+    player.hurtTimer = 0; 
+    player.PlayerDirection = 1;
+    
+    // 3. Resetar Animação de Morte
+    // Isso impede que o jogo ache que a animação já acabou
+    player.anim[PlayerDead].final = false;     
+    player.anim[PlayerDead].indiceFrameX = 0;
+    player.anim[PlayerDead].temporizador = 0;
     
     // =========================================================================
     // CONFIGURAÇÃO DE SPAWN (PLAYER E INIMIGOS)
@@ -107,6 +127,7 @@ void CarregarNivel(int nivel) {
     if (nivel == 1) {
         // --- FASE 1 (120x20 tiles) ---
         // Player: X=2, Y=7
+        player.renderoffsetY = 32.0f;
         player.position = (Vector2){ 2 * 16, 7 * 16 };
 
         // Inimigos Fase 1
@@ -127,15 +148,16 @@ void CarregarNivel(int nivel) {
         // --- FASE 2 (90x50 tiles) ---
         // Player: X=9, Y=7 (Conforme solicitado)
         // Y = 7 * 16 = 112 pixels.
+        player.renderoffsetY = 20.0f;
         player.position = (Vector2){ 
-            9 * 16,   
-            7 * 16    
+            9 * 16,   //X
+            40 * 16    
         };
 
         // Inimigos Fase 2 (Ajustados para o mapa de 90 tiles largura)
         
         // Abelha alta no início (X=20, Y=5)
-        enemies[enemyCount] = Enemy_Create((Vector2){20 * 16, 5 * 16}, 15 * 16, 25 * 16, 50);
+        enemies[enemyCount] = Enemy_Create((Vector2){20 * 16, 40 * 16}, 15 * 16, 25 * 16, 50);
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
         enemyCount++;
 
@@ -168,46 +190,59 @@ void Gameplay_Init(void) {
 
 // -----------------------------------------------------------------------------
 // Update
-EstadoJogo Gameplay_Update(void) {
+ EstadoJogo Gameplay_Update(void) {
     float dt = GetFrameTime();
 
     if (IsKeyPressed(KEY_ESCAPE)) return TELA_MENU;
 
-    // 1. Input e Animação do Player
+    // --- 1. LÓGICA DE MORTE ---
+    // Se o player morreu, tocamos a animação e trocamos de tela
+    if (player.state == PlayerDead) {
+        Render_UpdatePlayerAnim(&player, dt); // Atualiza só a animação
+        
+        // Se a animação de morte acabou
+        if (player.anim[PlayerDead].final) {
+            return TELA_GAMEOVER; // Vai para a tela de Game Over
+        }
+        return TELA_GAMEPLAY; // Continua na gameplay até a animação acabar
+    }
+
+    // --- 2. GAMEPLAY NORMAL (Só executa se estiver vivo) ---
+
+    // Input e Física
     Entities_ProcessPlayerInput(&player, dt);
     Physics_UpdatePlayer(&player, &gameMap, dt);
-    Render_UpdatePlayerAnim(&player, dt); // IMPORTANTÍSSIMO PARA O ATAQUE FUNCIONAR
+    Render_UpdatePlayerAnim(&player, dt);
 
-    // 2. Inimigos
+    // Inimigos
     int inimigosVivos = 0; 
     for(int i = 0; i < enemyCount; i++) {
         if (enemies[i].active) {
             inimigosVivos++;
             Physics_UpdateEnemy(&enemies[i], &gameMap, dt);
             
-            // Retorna Gameover se morrer
-            if (CheckPlayerEnemyCollision(&player, &enemies[i])) {
-                return TELA_GAMEOVER;
-            }
+            // Checa colisão
+            CheckPlayerEnemyCollision(&player, &enemies[i]);
         }
     }
 
-    // 3. Transição de Fase
-    if (inimigosVivos == 0) {
-        nivelAtual++;
-        if (nivelAtual > MAX_NIVEIS) {
+    // Transição de Fase (Só se estiver vivo)
+if (inimigosVivos == 0) {
+        // Verifica se é a última fase
+        if (nivelAtual >= MAX_NIVEIS) {
             return TELA_WINNER; 
-        } else {
-            CarregarNivel(nivelAtual);
-        }
+        } 
+        
+        // AQUI ESTÁ A MUDANÇA:
+        // Em vez de carregar direto, avisamos o SceneManager para mostrar a transição
+        return TELA_TRANSICAO; 
     }
 
-    // 4. Câmera
+    // Câmera
     Render_UpdateCamera(&camera, &player, &gameMap, LARGURA_TELA, ALTURA_TELA);
 
     return TELA_GAMEPLAY;
 }
-
 // -----------------------------------------------------------------------------
 // Draw
 void Gameplay_Draw(void) {
@@ -223,7 +258,7 @@ void Gameplay_Draw(void) {
         Render_Player(&player);  
     EndMode2D();
 
-    UI_DesenharHealthBar(player.health, 15, LARGURA_TELA); 
+    UI_DesenharHealthBar(player.health, 10, LARGURA_TELA); 
     DrawText(TextFormat("Nivel: %d | Inimigos: %d", nivelAtual, enemyCount), 20, 80, 20, BLACK);
     
     // Debug Posição
@@ -233,4 +268,23 @@ void Gameplay_Draw(void) {
 void Gameplay_Deinit(void) {
     MapLoader_Unload(&gameMap);
     Render_UnloadAssets();
+}
+
+void Gameplay_Reiniciar(void) {
+    // Se quiser reiniciar do Nível 1:
+    CarregarNivel(1); 
+    
+    // OU se quiser reiniciar do nível que morreu (Checkpoint):
+    //CarregarNivel(nivelAtual); 
+}
+
+void Gameplay_ProximoNivel(void) {
+    nivelAtual++;
+    
+    // Segurança: se passar do máximo, volta pro 1 (ou trata como quiser)
+    if (nivelAtual > MAX_NIVEIS) {
+        nivelAtual = 1;
+    }
+    
+    CarregarNivel(nivelAtual);
 }

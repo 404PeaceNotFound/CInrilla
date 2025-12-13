@@ -9,7 +9,9 @@ typedef enum {
     PlayerIdle,
     PlayerRun,
     PlayerJump,
-    PlayerAtk
+    PlayerAtk,
+    PlayerDead,
+    PlayerCount
 } PlayerState;
 
 typedef enum {
@@ -62,8 +64,9 @@ typedef struct {
     bool isatk;
     bool hasHit; 
     float hurtTimer; // Invencibilidade
+    float renderoffsetY;
     
-    AnimacaoSpritesheet anim[4]; 
+    AnimacaoSpritesheet anim[PlayerCount]; 
     PlayerAudio soundPlayer;
 } Player;
 

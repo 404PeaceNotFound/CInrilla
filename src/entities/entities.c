@@ -1,97 +1,118 @@
-#include "entities.h"
-#include "../systems/systems.h"
-#include "../data/entity_types.h"
-#include <raylib.h>
+    #include "entities.h"
+    #include "../systems/systems.h"
+    #include "../data/entity_types.h"
+    #include <raylib.h>
 
-// Input do Player
-void Entities_ProcessPlayerInput(Player *player, float dt) {
-    
-    // 1. Atualiza Timer de Invencibilidade (NOVO)
-    if (player->hurtTimer > 0) {
-        player->hurtTimer -= dt;
-    }
+    // Input do Player
+    void Entities_ProcessPlayerInput(Player *player, float dt) {
 
-    // Reset estado para Idle se não estiver fazendo nada
-    if (!player->isatk && player->canJump) {
-        player->state = PlayerIdle;
-    }
-
-    // Movimento Lateral
-    if (IsKeyDown(KEY_RIGHT)) {
-        player->position.x += 300.0f * dt; 
-        player->PlayerDirection = 1;
-        if (!player->isatk && player->canJump) player->state = PlayerRun;
-    }
-    if (IsKeyDown(KEY_LEFT)) {
-        player->position.x -= 300.0f * dt;
-        player->PlayerDirection = -1;
-        if (!player->isatk && player->canJump) player->state = PlayerRun;
-    }
-
-    // Pulo
-    if (IsKeyPressed(KEY_SPACE) && player->canJump) {
-        player->speed = -500.0f; // PLAYER_JUMP_SPD
-        player->canJump = false;
+        // ----------------------------------------------------------------
+        // 0. VERIFICAÇÃO DE MORTE
+        // ----------------------------------------------------------------
+        if (player->health <= 0) {
+            if (player->canJump) {
+                if (player->state != PlayerDead) { 
+                    player->state = PlayerDead;
+                }
+                player->speed = 0; 
+            } 
+            else {
+                player->state = PlayerJump; // Morte aérea: Transiciona para queda/knockback
+            }
+            return; // Bloqueia todo o resto se estiver morto
+        }   
         
-        if(IsSoundValid(player->soundPlayer.Jump)) PlaySound(player->soundPlayer.Jump);
-    }
+        // 1. Atualiza Timer de Invencibilidade
+        if (player->hurtTimer > 0) {
+            player->hurtTimer -= dt;
+        }
 
-    // Estado de Pulo (Só entra se não estiver atacando no chão)
-    // Pequena correção lógica: Se atacar no ar, mantemos a animação de ataque ou pulo?
-    // Geralmente ataque prioriza.
-    if (!player->canJump && !player->isatk) {
-        player->state = PlayerJump;
-    }
+        // Reset estado para Idle se não estiver fazendo nada
+        if (!player->isatk && player->canJump) {
+            player->state = PlayerIdle;
+        }
 
-    // Ataque
-    if (IsKeyPressed(KEY_Z) && !player->isatk) {
-        player->isatk = true;
-        player->hasHit = false;
-        player->state = PlayerAtk;
-        
-        player->anim[PlayerAtk].indiceFrameX = 0; // Reinicia frame
-        player->anim[PlayerAtk].temporizador = 0; // Reinicia tempo
-        player->anim[PlayerAtk].final = false;    // Reinicia flag de fim
-        
-        if(IsSoundValid(player->soundPlayer.Atk)) PlaySound(player->soundPlayer.Atk);
-    }
+        // --- CORREÇÃO AQUI ---
+        // Só permitimos processar movimento lateral se NÃO estiver atacando (!player->isatk)
+        // Se quiser permitir movimento no ar enquanto ataca, adicione "|| !player->canJump"
+        if (!player->isatk) { 
+            
+            // Movimento Lateral
+            if (IsKeyDown(KEY_RIGHT)) {
+                player->position.x += 300.0f * dt; 
+                player->PlayerDirection = 1;
+                if (player->canJump) player->state = PlayerRun;
+            }
+            if (IsKeyDown(KEY_LEFT)) {
+                player->position.x -= 300.0f * dt;
+                player->PlayerDirection = -1;
+                if (player->canJump) player->state = PlayerRun;
+            }
+        }
+        // ---------------------
 
-    // Controle de fim de ataque
-    if (player->isatk) {
-        if (player->anim[PlayerAtk].final) {
-            player->isatk = false;
-            // Retorna para Idle ou Pulo dependendo da gravidade
-            player->state = player->canJump ? PlayerIdle : PlayerJump;
+        // Pulo (Também bloqueamos o pulo se estiver atacando no chão, para evitar cancelamento de animação)
+        if (IsKeyPressed(KEY_SPACE) && player->canJump && !player->isatk) {
+            player->speed = -500.0f; 
+            player->canJump = false;
+            
+            if(IsSoundValid(player->soundPlayer.Jump)) PlaySound(player->soundPlayer.Jump);
+        }
+
+        // Estado de Pulo
+        if (!player->canJump && !player->isatk) {
+            player->state = PlayerJump;
+        }
+
+        // Ataque
+        if (IsKeyPressed(KEY_Z) && !player->isatk) {
+            player->isatk = true;
+            player->hasHit = false;
+            player->state = PlayerAtk;
+            
+            // Garante que o índice comece do zero
+            player->anim[PlayerAtk].indiceFrameX = 0; 
+            player->anim[PlayerAtk].temporizador = 0; 
+            player->anim[PlayerAtk].final = false;    
+            
+            if(IsSoundValid(player->soundPlayer.Atk)) PlaySound(player->soundPlayer.Atk);
+        }
+
+        // Controle de fim de ataque
+        if (player->isatk) {
+            if (player->anim[PlayerAtk].final) {
+                player->isatk = false;
+                player->state = player->canJump ? PlayerIdle : PlayerJump;
+            }
         }
     }
-}
 
-// Factory de Inimigos
-Enemy Enemy_Create(Vector2 pos, float minX, float maxX, float speed) {
-    Enemy e = {0};
-    
-    e.position = pos;
-    e.minX = minX;
-    e.maxX = maxX;
-    e.speed = speed;
-    e.verticalSpeed = 0.0f;
-    e.direction = 1;
-    e.active = true;
-    e.health = 3; 
-    
-    e.width = 30;
-    e.height = 30;
+    // Factory de Inimigos
+    Enemy Enemy_Create(Vector2 pos, float minX, float maxX, float speed) {
+        Enemy e = {0};
+        
+        e.position = pos;
+        e.minX = minX;
+        e.maxX = maxX;
+        e.speed = speed;
+        e.verticalSpeed = 0.0f;
+        e.direction = 1;
+        e.active = true;
+        e.health = 3; 
+        
+        e.width = 30;
+        e.height = 30;
 
-    e.state = ENEMY_STATE_WALK; 
+        e.state = ENEMY_STATE_WALK; 
 
-    // Padrões de segurança
-    e.frame = 0;
-    e.frameTime = 0.12f;
-    e.timer = e.frameTime; 
-    e.frameWidth = 64; e.frameHeight = 64;
-    e.maxFramesIdle = 4; e.maxFramesWalk = 6; e.maxFramesRun = 6; e.maxFramesAttack = 2;
-    e.rowIdle = 0; e.rowWalk = 1; e.rowRun = 2; e.rowAttack = 3;
-    e.useTexture = false; 
-    
-    return e;
-}
+        // Padrões de segurança
+        e.frame = 0;
+        e.frameTime = 0.12f;
+        e.timer = e.frameTime; 
+        e.frameWidth = 64; e.frameHeight = 64;
+        e.maxFramesIdle = 4; e.maxFramesWalk = 6; e.maxFramesRun = 6; e.maxFramesAttack = 2;
+        e.rowIdle = 0; e.rowWalk = 1; e.rowRun = 2; e.rowAttack = 3;
+        e.useTexture = false; 
+        
+        return e;
+    }
