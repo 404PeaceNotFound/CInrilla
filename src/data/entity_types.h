@@ -85,6 +85,8 @@ typedef struct {
     
     bool active;
     int health;
+    int damage;
+    float renderoffsetY;
     EnemyType type;
     EnemyState state;
 
@@ -92,7 +94,8 @@ typedef struct {
     Texture2D texture;
     
     int frame;           
-    float frameTime;     
+    float frameTime;  
+    float frameTimer;   
     float timer;         
     
     int frameWidth;      

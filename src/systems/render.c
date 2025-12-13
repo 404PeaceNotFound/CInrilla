@@ -182,7 +182,7 @@ void initPlayer(Player *player) {
     player->state = PlayerIdle;
     player->isatk = false;
     player->PlayerDirection = 1;
-    player->damage = 5;
+    player->damage = 2;
     player->health = 10;
     player->hurtTimer = 0;
 
@@ -234,6 +234,7 @@ void Render_UnloadAssets(void) {
 void Render_ConfigEnemy(Enemy *e, EnemyType type) {
     e->useTexture = true;
     e->rowIdle = 0; e->rowWalk = 0; e->rowRun = 0; e->rowAttack = 0;
+    e->frameTimer = 0.0f;
 
     switch (type) {
         case ENEMY_TYPE_BOAR:
@@ -265,16 +266,18 @@ void Render_ConfigEnemy(Enemy *e, EnemyType type) {
 void Render_Enemy(Enemy *e) {
     if(!e->active) return;
 
+    // --- DEBUG: CAIXA DE COLISÃO ---
+    // Desenha o quadrado vermelho SEMPRE (para debug), ou apenas se textura falhar
+    // Descomente a linha abaixo para ver onde as hitboxes estão:
+    // DrawRectangleLines(e->position.x, e->position.y - e->height, e->width, e->height, RED);
+
+    // Verificação de Textura
     if(!e->useTexture || e->texture.id == 0){ 
-        // Debug box se a textura falhar
-        DrawRectangle(e->position.x, e->position.y - e->height, e->width, e->height, RED);
+        DrawRectangle(e->position.x, e->position.y - e->height, e->width, e->height, MAROON);
         return;
     }
 
     int row = 0;
-    // Lógica simples de spritesheet (ajuste conforme seu asset)
-    // Se seus assets têm todas as anims na mesma sheet, use e->rowX.
-    // Se for só Walk, mantenha 0.
     switch(e->state){
         case ENEMY_STATE_IDLE:   row = e->rowIdle;   break;
         case ENEMY_STATE_WALK:   row = e->rowWalk;   break;
@@ -283,21 +286,41 @@ void Render_Enemy(Enemy *e) {
         default: row = 0; break;
     }
 
+    // 1. CORREÇÃO DA DIREÇÃO (Evita sumir se direction for 0)
+    float dir = (float)e->direction;
+    if (dir == 0) dir = 1.0f; // Se for 0, assume direita
+
     Rectangle src = {
         e->frame * e->frameWidth, 
         row * e->frameHeight, 
-        e->frameWidth * e->direction * -1, // Inverte se direção for -1
+        e->frameWidth * dir * -1, // Inverte para Raylib
         (float)e->frameHeight
     };
     
-    // Centraliza sprite na hitbox
-    float spriteOffsetx = (e->frameWidth - e->width) / 2.0f;
+    // 2. CORREÇÃO DE ESCALA (Para o Boss Gigante)
+    // Em vez de usar frameWidth/Height fixos, calculamos uma escala
+    // baseada no tamanho da Hitbox do inimigo.
+    
+    // Fator de escala (Se hitbox cresceu, sprite cresce)
+    // Usamos a altura como referência para manter proporção
+    float scale = e->height / (float)e->frameHeight; 
+    
+    // Se quiser manter o tamanho original para inimigos normais que têm hitbox menor que o sprite:
+    // (Apenas descomente se os inimigos normais ficarem estranhos)
+    // if (scale < 1.0f) scale = 1.0f; 
+
+    float drawWidth = e->frameWidth * scale;
+    float drawHeight = e->frameHeight * scale;
+
+    // 3. POSICIONAMENTO CENTRALIZADO
+    // Centraliza o sprite visualmente em relação à hitbox X
+    float spriteOffsetx = (drawWidth - e->width) / 2.0f;
     
     Rectangle dst = {
         e->position.x - spriteOffsetx, 
-        e->position.y - e->frameHeight, 
-        (float)e->frameWidth, 
-        (float)e->frameHeight
+        e->position.y - drawHeight + e->renderoffsetY, // Usa a altura desenhada + offset manual
+        drawWidth, 
+        drawHeight
     };
     
     DrawTexturePro(e->texture, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
@@ -349,3 +372,38 @@ void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int wid
     camera->target.x = Clamp(camera->target.x, minX, maxX);
     camera->target.y = Clamp(camera->target.y, minY, maxY);
 }
+
+
+void Render_UpdateEnemyAnim(Enemy *e, float dt) {
+    if (!e->active) return;
+
+    // --- CORREÇÃO AQUI ---
+    // Usamos frameTimer (o acumulador) e não frameTime (a duração fixa)
+    e->frameTimer += dt;
+
+    // Verificamos se o acumulador passou da duração limite
+    if (e->frameTimer >= e->frameTime) {
+        
+        // Resetamos o acumulador (pode subtrair frameTime para maior precisão)
+        e->frameTimer = 0.0f; 
+        
+        // Avança o quadro
+        e->frame++;
+
+        // Descobre quantos frames tem a animação atual
+        int maxFrames = 0;
+        switch (e->state) {
+            case ENEMY_STATE_IDLE:   maxFrames = e->maxFramesIdle;   break;
+            case ENEMY_STATE_WALK:   maxFrames = e->maxFramesWalk;   break;
+            case ENEMY_STATE_RUN:    maxFrames = e->maxFramesRun;    break;
+            case ENEMY_STATE_ATTACK: maxFrames = e->maxFramesAttack; break;
+            default: maxFrames = 1; break;
+        }
+
+        // Se passar do limite, volta para o frame 0 (Loop)
+        if (e->frame >= maxFrames) {
+            e->frame = 0;
+        }
+    }
+}
+

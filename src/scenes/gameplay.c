@@ -48,10 +48,13 @@ void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
         Rectangle atkRect = { attackX, p->position.y - 40, atkRange, atkHeight };
 
         if (CheckCollisionRecs(atkRect, enemyRect)) {
-            if (p->position.x < e->position.x) e->position.x += 30;
-            else e->position.x -= 30;
+            if (p->position.x < e->position.x) e->position.x += 20;
+            else e->position.x -= 20;
             
-            e->active = 0; 
+            e->health -= p->damage; 
+            if (e->health <= 0) {
+                e->active = 0; 
+            }
             p->hasHit = true; 
             return; 
         }
@@ -60,7 +63,7 @@ void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
     // 2. DANO NO PLAYER (Inimigo toca no player)
     if (p->hurtTimer <= 0 && CheckCollisionRecs(playerBody, enemyRect)) {
         
-        p->health -= 1; 
+        p->health -= e->damage; 
 
         // --- VERIFICAÇÃO DE MORTE ---
         if (p->health <= 0) {
@@ -149,35 +152,62 @@ void CarregarNivel(int nivel) {
 
         enemies[enemyCount] = Enemy_Create((Vector2){40 * 16, 12 * 16}, 35 * 16, 45 * 16, 60); 
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR); 
+        enemies[enemyCount].health = 4;
+        enemies[enemyCount].damage = 1;
         enemyCount++;
 
         enemies[enemyCount] = Enemy_Create((Vector2){90 * 16, 10 * 16}, 85 * 16, 95 * 16, 60); 
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
+        enemies[enemyCount].health = 4;
+        enemies[enemyCount].damage = 1;
         enemyCount++;
         
         enemies[enemyCount] = Enemy_Create((Vector2){110 * 16, 12 * 16}, 105 * 16, 115 * 16, 80); 
         Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR); 
+        enemies[enemyCount].health = 4;
+        enemies[enemyCount].damage = 1;
         enemyCount++;
     } 
     else if (nivel == 2) {
-        // --- FASE 2 ---
-        player.renderoffsetY = 20.0f;
-        player.position = (Vector2){ 9 * 16, 40 * 16 };
+            // --- FASE 2 (90x50 tiles) ---
+            player.renderoffsetY = 20.0f;
+            player.position = (Vector2){ 9 * 16, 40 * 16 };
 
-        enemies[enemyCount] = Enemy_Create((Vector2){20 * 16, 40 * 16}, 15 * 16, 25 * 16, 50);
-        Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
-        enemyCount++;
+            // Inimigo 1: Abelha (Início) - Mantém igual
+            enemies[enemyCount] = Enemy_Create((Vector2){20 * 16, 40 * 16}, 15 * 16, 25 * 16, 50);
+            Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_SMALL_BEE);
+            enemies[enemyCount].health = 4;
+            enemies[enemyCount].damage = 1;
+            enemies[enemyCount].renderoffsetY = -5.0f;
+            enemyCount++;
 
-        enemies[enemyCount] = Enemy_Create((Vector2){45 * 16, 20 * 16}, 40 * 16, 50 * 16, 70);
-        Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
-        enemyCount++;
-        
-        // --- CÓDIGO QUE ESTAVA FALTANDO AQUI EMBAIXO: ---
-        // Javali no final (X=80, Y=40 - bem baixo)
-        enemies[enemyCount] = Enemy_Create((Vector2){80 * 16, 40 * 16}, 75 * 16, 85 * 16, 90);
-        Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
-        enemyCount++;
-    }
+            // ==========================================================
+            // BOSS: O JAVALI GIGANTE (Agora no meio do mapa)
+            // ==========================================================
+            // Posição X=45 (Onde estava o javali normal)
+            // Patrulha entre X=40 e X=50
+            // Velocidade: 100 (Um pouco mais lento que antes pra não bugar a patrulha curta)
+            enemies[enemyCount] = Enemy_Create((Vector2){55 * 16, 20 * 16}, 45 * 16, 70 * 16, 100);
+            Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
+            enemies[enemyCount].health = 8;
+            enemies[enemyCount].damage = 2;
+
+            // Aumenta o tamanho
+            float escalaBoss = 2.5f;
+            enemies[enemyCount].width *= escalaBoss;
+            enemies[enemyCount].height *= escalaBoss;
+
+            // --- CORREÇÃO CRÍTICA DE POSIÇÃO ---
+            // Como ele cresce para baixo, precisamos subir ele MUITO para não nascer enterrado
+            // Subimos 50 pixels para garantir que ele caia no chão em vez de nascer dentro dele
+            enemies[enemyCount].position.y -= 50.0f; 
+            
+            // Ajuste visual (opcional, só se o sprite parecer flutuando depois de cair)
+            enemies[enemyCount].renderoffsetY = 12.0f; 
+
+            enemyCount++;
+            // ==========================================================
+        }
 }
 
 // -----------------------------------------------------------------------------
@@ -240,6 +270,7 @@ void Gameplay_Init(void) {
         if (enemies[i].active) {
             inimigosVivos++;
             Physics_UpdateEnemy(&enemies[i], &gameMap, dt);
+            Render_UpdateEnemyAnim(&enemies[i], dt);
             
             // Checa colisão
             CheckPlayerEnemyCollision(&player, &enemies[i]);

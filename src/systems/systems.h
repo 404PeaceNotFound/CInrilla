@@ -26,6 +26,7 @@ void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int wid
 // Enemy
 void Render_ConfigEnemy(Enemy *e, EnemyType type);
 void Render_Enemy(Enemy *e);
+void Render_UpdateEnemyAnim(Enemy *e, float dt);
 
 // --- Animation System (Sistema de Animação Genérico) ---
 AnimacaoSpritesheet Render_CreateAnim(const char *path, int fX, int fY, float fps, int w, int h, bool loopar, bool menu);

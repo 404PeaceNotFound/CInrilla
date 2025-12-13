@@ -1,7 +1,8 @@
 #include "scene_manager.h"
 #include <raylib.h>
 #include "../core/core_platform.h"
-
+#define LARGURA_TELA 1280
+#define ALTURA_TELA 720
 
 static EstadoJogo estadoAtual = TELA_MENU;
 
@@ -18,10 +19,33 @@ EstadoJogo Transicao_Update(void) {
 }
 
 void Transicao_Draw(void) {
-    // Desenha uma tela escura com texto
     ClearBackground(BLACK); 
-    DrawText("FASE CONCLUIDA!", 300, 200, 40, GREEN);
-    DrawText("Pressione ENTER para a proxima fase", 250, 300, 20, WHITE);
+
+    // --- 1. TÍTULO ("FASE CONCLUÍDA!") ---
+    const char* textoTitulo = "FASE CONCLUIDA!";
+    int tamanhoFonteTitulo = 40;
+    
+    // Mede a largura do texto em pixels
+    int larguraTextoTitulo = MeasureText(textoTitulo, tamanhoFonteTitulo);
+    
+    // Calcula a posição X para ficar no centro
+    int posX_Titulo = (LARGURA_TELA - larguraTextoTitulo) / 2;
+    int posY_Titulo = (ALTURA_TELA / 2) - 50; // Um pouco acima do meio
+
+
+    // --- 2. SUBTÍTULO ("Pressione ENTER...") ---
+    const char* textoSub = "Pressione ENTER para a proxima fase";
+    int tamanhoFonteSub = 20;
+    
+    int larguraTextoSub = MeasureText(textoSub, tamanhoFonteSub);
+    
+    int posX_Sub = (LARGURA_TELA - larguraTextoSub) / 2;
+    int posY_Sub = (ALTURA_TELA / 2) + 10; // Um pouco abaixo do meio
+
+
+    // --- 3. DESENHA ---
+    DrawText(textoTitulo, posX_Titulo, posY_Titulo, tamanhoFonteTitulo, GREEN);
+    DrawText(textoSub, posX_Sub, posY_Sub, tamanhoFonteSub, WHITE);
 }
 // ============================================================================
 
