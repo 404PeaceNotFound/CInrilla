@@ -150,16 +150,8 @@ void Render_Player(Player *player) {
         // 1. Offset Global (para centralizar o boneco em pé)
         posicaoVisual.y -= player->renderoffsetY;
 
-        // 2. CORREÇÃO DA MORTE (O Pulo do Gato)
-        // Se estiver morto, precisamos "desfazer" parte da subida acima
-        // ou empurrar ele mais para baixo.
         if (player->state == PlayerDead) {
-            // Aumente este valor até ele tocar o chão. 
-            // Como você subiu 32 ali em cima, somar uns 15 ou 20 deve resolver.
-            posicaoVisual.y += 20.0f; 
-            
-            // Opcional: Ajuste lateral se ele cair desalinhado
-            // posicaoVisual.x -= 5.0f; 
+            posicaoVisual.y += 20.0f;  
         }
 
         bool virar = (player->PlayerDirection == -1);
@@ -266,12 +258,6 @@ void Render_ConfigEnemy(Enemy *e, EnemyType type) {
 void Render_Enemy(Enemy *e) {
     if(!e->active) return;
 
-    // --- DEBUG: CAIXA DE COLISÃO ---
-    // Desenha o quadrado vermelho SEMPRE (para debug), ou apenas se textura falhar
-    // Descomente a linha abaixo para ver onde as hitboxes estão:
-    // DrawRectangleLines(e->position.x, e->position.y - e->height, e->width, e->height, RED);
-
-    // Verificação de Textura
     if(!e->useTexture || e->texture.id == 0){ 
         DrawRectangle(e->position.x, e->position.y - e->height, e->width, e->height, MAROON);
         return;
@@ -298,16 +284,8 @@ void Render_Enemy(Enemy *e) {
     };
     
     // 2. CORREÇÃO DE ESCALA (Para o Boss Gigante)
-    // Em vez de usar frameWidth/Height fixos, calculamos uma escala
-    // baseada no tamanho da Hitbox do inimigo.
     
-    // Fator de escala (Se hitbox cresceu, sprite cresce)
-    // Usamos a altura como referência para manter proporção
     float scale = e->height / (float)e->frameHeight; 
-    
-    // Se quiser manter o tamanho original para inimigos normais que têm hitbox menor que o sprite:
-    // (Apenas descomente se os inimigos normais ficarem estranhos)
-    // if (scale < 1.0f) scale = 1.0f; 
 
     float drawWidth = e->frameWidth * scale;
     float drawHeight = e->frameHeight * scale;
@@ -340,16 +318,12 @@ void Render_DrawBackground(int larguraTela, int alturaTela) {
 // CAMERA
 // ============================================================================
 void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int width, int height) {
-    // Calcula o alvo ideal (onde a câmera QUERIA estar)
+    // Calcula o alvo ideal 
     Vector2 targetIdeal = player->position;
     
-    // Configura um offset (meio da tela)
+    // Configura um offset
     camera->offset = (Vector2){ width/2.0f, height/2.0f };
 
-    // --- A SOLUÇÃO DA TRAVADA ---
-    // Em vez de atribuir direto (=), usamos Lerp (Interpolação Linear).
-    // O 0.1f é a "preguiça". Quanto menor, mais suave (mas mais atrasada).
-    // Teste valores entre 0.05f e 0.15f.
     
     float smoothFactor = 0.1f; 
 
@@ -360,9 +334,6 @@ void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int wid
 
     // Travas do mapa (Clamp)
     if (!map->loaded) return;
-
-    // ... (Mantenha seu código de Clamp/Limites do mapa aqui, 
-    // mas aplique sobre camera->target atualizado pelo Lerp) ...
     
     float minX = width/2.0f / camera->zoom;
     float maxX = (map->width * map->tileWidth) - minX;
@@ -377,14 +348,10 @@ void Render_UpdateCamera(Camera2D *camera, Player *player, GameMap* map, int wid
 void Render_UpdateEnemyAnim(Enemy *e, float dt) {
     if (!e->active) return;
 
-    // --- CORREÇÃO AQUI ---
-    // Usamos frameTimer (o acumulador) e não frameTime (a duração fixa)
     e->frameTimer += dt;
 
-    // Verificamos se o acumulador passou da duração limite
     if (e->frameTimer >= e->frameTime) {
         
-        // Resetamos o acumulador (pode subtrair frameTime para maior precisão)
         e->frameTimer = 0.0f; 
         
         // Avança o quadro

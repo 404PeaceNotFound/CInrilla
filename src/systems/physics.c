@@ -47,16 +47,12 @@ void Physics_UpdatePlayer(Player *player, GameMap* map, float dt) {
     // ------------------------------------------------------------------------
     // 1. EIXO X (Com Correção de "Tropeço" e Auto-Step)
     // ------------------------------------------------------------------------
-    
-    // TRUQUE 1: REDUZIR ALTURA DA HITBOX X
-    // Em vez de usar a altura total (40), usamos 35 ou 38.
-    // Tiramos uns pixels de baixo. Isso impede que o personagem "tropece" 
-    // em micro-desalinhamentos do chão enquanto anda.
+
     Rectangle rectX = { 
         player->position.x - 20, 
         oldPos.y - 40, 
         40, 
-        34 // <--- Reduzi de 40 para 34 (Levanta o "pé" da verificação lateral)
+        34 
     };
 
     if (CheckMapCollision(map, rectX)) {
@@ -83,21 +79,15 @@ void Physics_UpdatePlayer(Player *player, GameMap* map, float dt) {
             };
 
             if (!CheckMapCollision(map, rectStep)) {
-                // [SUCESSO] Conseguimos subir!
                 subiu = true;
-                
-                // TRUQUE 2: ZERAR VELOCIDADE VERTICAL
-                // Isso impede que a gravidade "puxe" ele de volta no próximo frame
-                // causando aquele efeito de tremedeira.
                 player->speed = 0; 
                 
             } else {
-                // [FALHA] Era uma parede muito alta
+
                 player->position.y = yOriginal; // Desfaz a subida
             }
         }
 
-        // Se não conseguiu subir, aí sim bloqueia o movimento X
         if (!subiu) {
             player->position.x = oldPos.x;
         }
@@ -127,12 +117,9 @@ void Physics_UpdatePlayer(Player *player, GameMap* map, float dt) {
             
         } else if (player->speed < 0) { // Batendo cabeça
              player->speed = 0;
-             // Opcional: empurrar um pouco para baixo
-             // player->position.y = oldPos.y; 
         }
     } else {
-        // Se saiu do chão (ex: desceu o degrau andando), marca que não pode pular
-        // Mas damos uma tolerância (Coyote Time) se quiser implementar depois.
+
         player->canJump = false;
     }
 }

@@ -32,9 +32,6 @@
             player->state = PlayerIdle;
         }
 
-        // --- CORREÇÃO AQUI ---
-        // Só permitimos processar movimento lateral se NÃO estiver atacando (!player->isatk)
-        // Se quiser permitir movimento no ar enquanto ataca, adicione "|| !player->canJump"
         if (!player->isatk) { 
             
             // Movimento Lateral
@@ -53,7 +50,7 @@
         }
         // ---------------------
 
-        // Pulo (Também bloqueamos o pulo se estiver atacando no chão, para evitar cancelamento de animação)
+        // Pulo
         if (IsKeyPressed(KEY_SPACE) && player->canJump && !player->isatk) {
             player->speed = -500.0f; 
             player->canJump = false;

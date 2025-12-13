@@ -31,7 +31,6 @@ static int enemyCount = 0;
 
 // -----------------------------------------------------------------------------
 // Lógica de Colisão Player vs Inimigo
-// Lógica de Colisão Player vs Inimigo
 void CheckPlayerEnemyCollision(Player *p, Enemy *e) {
     if (!e->active) return; // Void function não retorna true/false
 
@@ -184,9 +183,6 @@ void CarregarNivel(int nivel) {
             // ==========================================================
             // BOSS: O JAVALI GIGANTE (Agora no meio do mapa)
             // ==========================================================
-            // Posição X=45 (Onde estava o javali normal)
-            // Patrulha entre X=40 e X=50
-            // Velocidade: 100 (Um pouco mais lento que antes pra não bugar a patrulha curta)
             enemies[enemyCount] = Enemy_Create((Vector2){55 * 16, 20 * 16}, 45 * 16, 70 * 16, 100);
             Render_ConfigEnemy(&enemies[enemyCount], ENEMY_TYPE_BOAR);
             enemies[enemyCount].health = 8;
@@ -197,12 +193,9 @@ void CarregarNivel(int nivel) {
             enemies[enemyCount].width *= escalaBoss;
             enemies[enemyCount].height *= escalaBoss;
 
-            // --- CORREÇÃO CRÍTICA DE POSIÇÃO ---
-            // Como ele cresce para baixo, precisamos subir ele MUITO para não nascer enterrado
-            // Subimos 50 pixels para garantir que ele caia no chão em vez de nascer dentro dele
             enemies[enemyCount].position.y -= 50.0f; 
             
-            // Ajuste visual (opcional, só se o sprite parecer flutuando depois de cair)
+            // Ajuste visual 
             enemies[enemyCount].renderoffsetY = 12.0f; 
 
             enemyCount++;
@@ -324,11 +317,8 @@ void Gameplay_Deinit(void) {
 }
 
 void Gameplay_Reiniciar(void) {
-    // Se quiser reiniciar do Nível 1:
     CarregarNivel(1); 
     
-    // OU se quiser reiniciar do nível que morreu (Checkpoint):
-    //CarregarNivel(nivelAtual); 
 }
 
 void Gameplay_ProximoNivel(void) {
